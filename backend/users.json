@@ -1,0 +1,243 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "Varren Meg Naive",
+      "studentId": "2023306537",
+      "email": "varrenmegm.naive@gmail.com",
+      "password": "$2a$10$NaLaD3GUyXcdxNX7EeXbnuI/pzmWeJX8LIVrz8uyw5.L9jJaramku",
+      "phone": "09639216056",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-23T07:03:01.503Z",
+      "updatedAt": "2025-11-06T08:42:21.947Z"
+    },
+    {
+      "id": 2,
+      "fullName": "Vophsi Naive",
+      "studentId": "2023306538",
+      "email": "vophsi@gmail.com",
+      "password": "$2a$10$7W9z0Z/R.56xdCE9RoWfbeiNFr/mhQhoBWvAMzkqMMiTiTSMDKxny",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-23T07:17:10.767Z",
+      "updatedAt": "2025-10-23T07:17:10.767Z"
+    },
+    {
+      "id": 3,
+      "fullName": "Kent Aligsao",
+      "studentId": "2023306539",
+      "email": "kent@gmail.com",
+      "password": "$2a$10$QL3zkQDnkbGKYKvL0IXFEurTigPBXBf7u2m1MqZtz376knuXAVjG2",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-27T08:38:02.579Z",
+      "updatedAt": "2025-10-27T08:38:02.579Z"
+    },
+    {
+      "id": 4,
+      "fullName": "Gypsy Daffodil Naive",
+      "studentId": "2024306537",
+      "email": "gypsnaive@gmail.com",
+      "password": "$2a$10$44/QtR45of.nNbRxalH8y.mYlsqVXJXE.DA4mXqBgh65LSwnRMzT.",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-27T08:43:23.019Z",
+      "updatedAt": "2025-10-27T08:43:23.019Z"
+    },
+    {
+      "id": 5,
+      "fullName": "Test",
+      "studentId": "12345",
+      "email": "gagaha@gmail.com",
+      "password": "$2a$10$9.vpPIqpYPO8xfpL5QO29.C78S1YaFuK0ouHnDkWe7WwMOvxnRRz2",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-27T08:45:56.936Z",
+      "updatedAt": "2025-10-27T08:45:56.936Z"
+    },
+    {
+      "id": 6,
+      "fullName": "John Doe",
+      "studentId": "1234567",
+      "email": "john@gmail.com",
+      "password": "$2a$10$H8cwVwF1Jq5lbmYC0ALpE.kmi26DCkg01lV1kjnMYyfP2K3yWbmdq",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-27T09:05:39.029Z",
+      "updatedAt": "2025-10-27T09:05:39.029Z"
+    },
+    {
+      "id": 7,
+      "fullName": "Johny Bravo",
+      "studentId": "123456789",
+      "email": "johny@gmail.com",
+      "password": "$2a$10$E05w2pj3KeQFdDB1WqQq1e75fx22JzjdSbg2VbzDm2CN2AjBpI/nq",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-10-27T09:16:59.260Z",
+      "updatedAt": "2025-10-27T09:16:59.260Z"
+    },
+    {
+      "id": 8,
+      "fullName": "Gabriela Barita",
+      "studentId": "2023306541",
+      "email": "gabriela@gmail.com",
+      "password": "$2a$10$Wg4uslIya2q1zPyWh9/y8u8UX0VTzMM9I1p54h/pqo1cVXWUlAgEW",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-11-18T07:44:47.080Z",
+      "updatedAt": "2025-11-18T07:44:47.080Z"
+    },
+    {
+      "id": 9,
+      "fullName": "Varren Nigga",
+      "studentId": "2027462926",
+      "email": "nigga@gmail.com",
+      "password": "$2a$10$grvi4FvW.DplT4JwL4thB.BURijsUrMoFlfjoiVDbuRvM3M6subFa",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T03:50:24.656Z",
+      "updatedAt": "2025-12-04T03:50:24.656Z"
+    },
+    {
+      "id": 10,
+      "fullName": "Kent Canoy Naive",
+      "studentId": "2023306521",
+      "email": "kentcanoy@gmail.com",
+      "password": "$2a$10$qQmo2sakWu3im2O9KsAL4eDnIcZrkE60E.ggtLgWaP4Ux5wdMWKQW",
+      "phone": "09555454587",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T08:44:10.324Z",
+      "updatedAt": "2025-12-04T08:50:24.750Z"
+    },
+    {
+      "id": 11,
+      "fullName": "Kent Aligsao",
+      "studentId": "2023303849",
+      "email": "kd.aligsao@gmail.com",
+      "password": "$2a$10$sz6PvNqkN/xC/1yJKIE4ReBAwI/knniramk/UxrcKisALcxoXGa0e",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T08:57:11.498Z",
+      "updatedAt": "2025-12-04T08:57:11.498Z"
+    },
+    {
+      "id": 12,
+      "fullName": "Kent Dan Aligsao",
+      "studentId": "202303850",
+      "email": "k.aligsao@gmail.com",
+      "password": "$2a$10$e.hisIwOlljlQV9o2Jdz1OejdGC7ZX4dBM9k2P58A/NN5Y6E33XLq",
+      "phone": "0999636258",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T09:43:07.321Z",
+      "updatedAt": "2025-12-04T09:46:03.700Z"
+    },
+    {
+      "id": 13,
+      "fullName": "Bene Roy Lim",
+      "studentId": "20245678",
+      "email": "bene@gmail.com",
+      "password": "$2a$10$ohKs2FgMZHjz6SkrT0x7juX.5Xkc.2hYLS6U/MaQ5XseEXbD7Hgf.",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T12:27:36.632Z",
+      "updatedAt": "2025-12-04T12:27:36.632Z"
+    },
+    {
+      "id": 14,
+      "fullName": "Bene Gab",
+      "studentId": "2024406537",
+      "email": "benegab@gmail.com",
+      "password": "$2a$10$9v6CkGaogfVjwCL3OLhT8eXRrhUto8/7EB9ekydTMCnKGSXavWgMy",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2025-12-04T12:39:48.224Z",
+      "updatedAt": "2025-12-04T12:39:48.224Z"
+    }
+  ],
+  "nextId": 15
+}

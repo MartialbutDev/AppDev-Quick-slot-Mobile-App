@@ -1,0 +1,335 @@
+{
+  "orders": [
+    {
+      "id": 1,
+      "userId": 1,
+      "orderNumber": "QS1761283363506TBLJR",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 32,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 30
+        }
+      ],
+      "totalAmount": 30,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Varren Meg naive ",
+        "phoneNumber": "846464",
+        "email": "Hahahaha",
+        "meetupLocation": "Hahah\n",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Gahahaha",
+      "status": "completed",
+      "createdAt": "2025-10-24T05:22:43.506Z",
+      "updatedAt": "2025-10-24T05:57:32.495Z"
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "orderNumber": "QS1761285703555WWETA",
+      "items": [
+        {
+          "id": "13",
+          "name": "Wireless Keyboard & Mouse",
+          "price": "₱5.00/hour",
+          "image": 42,
+          "owner": "Accessory World",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 5
+        }
+      ],
+      "totalAmount": 5,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Justine Nabunturan",
+        "phoneNumber": "516648484",
+        "email": "Justin@gmail.com",
+        "meetupLocation": "Citc dawg",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Citc ra dawg\n",
+      "status": "completed",
+      "createdAt": "2025-10-24T06:01:43.555Z",
+      "updatedAt": "2025-10-24T06:03:46.300Z"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "orderNumber": "QS17614663685223TDT4",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 26,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 2,
+          "totalPrice": 30
+        }
+      ],
+      "totalAmount": 30,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Varren Meg Naive",
+        "phoneNumber": "09639216056",
+        "email": "Carrenmegm.naive@gmail.com",
+        "meetupLocation": "Ambot asa",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Citc ea goys\n",
+      "status": "completed",
+      "createdAt": "2025-10-26T08:12:48.523Z",
+      "updatedAt": "2025-10-26T08:13:48.235Z"
+    },
+    {
+      "id": 4,
+      "userId": 1,
+      "orderNumber": "QS1761469730753BOIY6",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 29,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 30
+        },
+        {
+          "id": "9",
+          "name": "Canon EOS R5",
+          "price": "₱50.00/hour",
+          "image": 37,
+          "owner": "Camera Pro Rentals",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 50
+        }
+      ],
+      "totalAmount": 80,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Varren",
+        "phoneNumber": "096216056",
+        "email": "Varrenmegm.naive@gmail.com",
+        "meetupLocation": "Citc",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Campus",
+      "status": "completed",
+      "createdAt": "2025-10-26T09:08:50.754Z",
+      "updatedAt": "2025-10-26T09:09:11.331Z"
+    },
+    {
+      "id": 5,
+      "userId": 1,
+      "orderNumber": "QS17624186426873AEBY",
+      "items": [
+        {
+          "id": "10",
+          "name": "Sony A7IV",
+          "price": "₱45.00/hour",
+          "image": 35,
+          "owner": "Camera Pro Rentals",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 45
+        }
+      ],
+      "totalAmount": 45,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Varren Meg Naive",
+        "phoneNumber": "09639216056",
+        "email": "varren@gmail.com",
+        "meetupLocation": "CUTC",
+        "deliveryAddress": "CITC RA"
+      },
+      "specialInstructions": "Citc rata kita",
+      "status": "cancelled",
+      "createdAt": "2025-11-06T08:44:02.687Z",
+      "updatedAt": "2025-11-30T05:19:55.092Z"
+    },
+    {
+      "id": 6,
+      "userId": 9,
+      "orderNumber": "QS1764820353473T9X3O",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 25,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 30
+        },
+        {
+          "id": "2",
+          "name": "Lenovo Ideapad Slim 3",
+          "price": "₱35.00/hour",
+          "image": 26,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 35
+        }
+      ],
+      "totalAmount": 65,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Gon",
+        "phoneNumber": "51010494664",
+        "email": "Gejahw@gmail.clm",
+        "meetupLocation": "Citc",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "CITC RA",
+      "status": "pending",
+      "createdAt": "2025-12-04T03:52:33.473Z",
+      "updatedAt": "2025-12-04T03:52:33.473Z"
+    },
+    {
+      "id": 7,
+      "userId": 1,
+      "orderNumber": "QS176483767244163E16",
+      "items": [
+        {
+          "id": "9",
+          "name": "Canon EOS R5",
+          "price": "₱50.00/hour",
+          "image": 33,
+          "owner": "Camera Pro Rentals",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 50
+        }
+      ],
+      "totalAmount": 50,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Kent",
+        "phoneNumber": "045464946154",
+        "email": "Kent@gmaol.com",
+        "meetupLocation": "Citc",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Citc",
+      "status": "pending",
+      "createdAt": "2025-12-04T08:41:12.442Z",
+      "updatedAt": "2025-12-04T08:41:12.442Z"
+    },
+    {
+      "id": 8,
+      "userId": 10,
+      "orderNumber": "QS1764837893020YTL3B",
+      "items": [
+        {
+          "id": "5",
+          "name": "Gaming PC RTX 4080",
+          "price": "₱120.00/hour",
+          "image": 29,
+          "owner": "Tech Rent PH",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 120
+        }
+      ],
+      "totalAmount": 120,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Kent canoy",
+        "phoneNumber": "09653840184",
+        "email": "Kentcanot@gmail.clm",
+        "meetupLocation": "CITC",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "CITC",
+      "status": "completed",
+      "createdAt": "2025-12-04T08:44:53.020Z",
+      "updatedAt": "2025-12-04T08:47:41.801Z"
+    },
+    {
+      "id": 9,
+      "userId": 11,
+      "orderNumber": "QS17648387417565B29A",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 25,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "days",
+          "quantity": 1,
+          "totalPrice": 720
+        },
+        {
+          "id": "2",
+          "name": "Lenovo Ideapad Slim 3",
+          "price": "₱35.00/hour",
+          "image": 26,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 35
+        }
+      ],
+      "totalAmount": 755,
+      "paymentMethod": "gcash",
+      "contactInfo": {
+        "fullName": "kent gwapo",
+        "phoneNumber": "099965321",
+        "email": "Kd.aligsao@gmail.com",
+        "meetupLocation": "",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "Gwapoko",
+      "status": "pending",
+      "createdAt": "2025-12-04T08:59:01.757Z",
+      "updatedAt": "2025-12-04T08:59:01.757Z"
+    },
+    {
+      "id": 10,
+      "userId": 14,
+      "orderNumber": "QS176485207909484PIT",
+      "items": [
+        {
+          "id": "1",
+          "name": "Acer Aspire Go 15",
+          "price": "₱30.00/hour",
+          "image": 25,
+          "owner": "Aligsao Gadgets",
+          "rentalDuration": "hours",
+          "quantity": 1,
+          "totalPrice": 30
+        }
+      ],
+      "totalAmount": 30,
+      "paymentMethod": "cash",
+      "contactInfo": {
+        "fullName": "Varren Meg Naive",
+        "phoneNumber": "09339545454",
+        "email": "Varrenmeg@gmail.com",
+        "meetupLocation": "CITC",
+        "deliveryAddress": ""
+      },
+      "specialInstructions": "CITC",
+      "status": "completed",
+      "createdAt": "2025-12-04T12:41:19.095Z",
+      "updatedAt": "2025-12-04T12:41:41.349Z"
+    }
+  ],
+  "nextOrderId": 11
+}

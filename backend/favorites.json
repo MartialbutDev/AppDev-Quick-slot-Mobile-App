@@ -1,0 +1,48 @@
+{
+  "favorites": [
+    {
+      "id": "1764820282836",
+      "userId": 9,
+      "productId": "1",
+      "productName": "Acer Aspire Go 15",
+      "productPrice": "₱30.00/hour",
+      "productImage": "",
+      "productDescription": "Lightweight laptop perfect for students and professionals",
+      "category": "Laptops",
+      "addedAt": "2025-12-04T03:51:22.836Z"
+    },
+    {
+      "id": "1764838283579",
+      "userId": 10,
+      "productId": "5",
+      "productName": "Gaming PC RTX 4080",
+      "productPrice": "₱120.00/hour",
+      "productImage": "",
+      "productDescription": "High-end gaming rig for ultimate performance",
+      "category": "Gaming PCs",
+      "addedAt": "2025-12-04T08:51:23.579Z"
+    },
+    {
+      "id": "1764838286293",
+      "userId": 10,
+      "productId": "6",
+      "productName": "Streaming Setup Pro",
+      "productPrice": "₱95.00/hour",
+      "productImage": "",
+      "productDescription": "Perfect setup for streaming and content creation",
+      "category": "Gaming PCs",
+      "addedAt": "2025-12-04T08:51:26.293Z"
+    },
+    {
+      "id": "1764852143238",
+      "userId": 14,
+      "productId": "5",
+      "productName": "Gaming PC RTX 4080",
+      "productPrice": "₱120.00/hour",
+      "productImage": "",
+      "productDescription": "High-end gaming rig for ultimate performance",
+      "category": "Gaming PCs",
+      "addedAt": "2025-12-04T12:42:23.238Z"
+    }
+  ]
+}
