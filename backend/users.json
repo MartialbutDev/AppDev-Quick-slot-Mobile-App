@@ -237,7 +237,58 @@
       },
       "createdAt": "2025-12-04T12:39:48.224Z",
       "updatedAt": "2025-12-04T12:39:48.224Z"
+    },
+    {
+      "id": 15,
+      "fullName": "What The Fuck",
+      "studentId": "2012345678",
+      "email": "whatthefuck@gmail.com",
+      "password": "$2a$10$XXBz1PQFIUV9fn.Ib9Blyu9YcuYM6g8br.vpOaOCkNZHoS2LfEVIu",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-02-07T01:45:01.559Z",
+      "updatedAt": "2026-02-07T01:45:01.559Z"
+    },
+    {
+      "id": 16,
+      "fullName": "John Doe",
+      "studentId": "202312345",
+      "email": "johndoe@gmail.com",
+      "password": "$2a$10$R6ligJm9AByI3evkRNNfcuGRkGp/SkHiKkl6zXF1lzMmyN.zdr4fW",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-02-07T02:05:19.322Z",
+      "updatedAt": "2026-02-07T02:05:19.322Z"
+    },
+    {
+      "id": 17,
+      "fullName": "John doenut",
+      "studentId": "202412345",
+      "email": "johndoenut@gmail.con",
+      "password": "$2a$10$NO.UZsDQfRcUb53DqDW7AuLRjER/B2V12VxhaFcyF7bilD97n7yGK",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-02-07T02:10:10.328Z",
+      "updatedAt": "2026-02-07T02:10:10.328Z"
     }
   ],
-  "nextId": 15
+  "nextId": 18
 }
