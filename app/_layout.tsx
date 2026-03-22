@@ -113,6 +113,13 @@ export default function RootLayout() {
           
           {/* OTHER SCREENS */}
           <Stack.Screen name="notification" />
+
+          {/* Add after existing profile screens */}
+          <Stack.Screen name="payment-methods" />
+          <Stack.Screen name="faqs" />
+          <Stack.Screen name="reviews" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen name="messages" />
           
           {/* CATCH-ALL ROUTE FOR 404 */}
           <Stack.Screen 
