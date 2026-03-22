@@ -333,8 +333,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 150,
+    height: 70,
     resizeMode: 'contain',
     marginBottom: 15,
   },
