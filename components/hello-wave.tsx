@@ -1,5 +1,5 @@
 import Animated from 'react-native-reanimated';
-
+//wave
 export function HelloWave() {
   return (
     <Animated.Text
