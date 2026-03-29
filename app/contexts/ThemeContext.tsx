@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
-// Color schemes for light and dark mode
+// Color Schemes for light and dark mode
 
 export const lightColors = {
   background: '#fff',
@@ -23,7 +23,8 @@ export const lightColors = {
   success: '#34C759',
   warning: '#FF9500',
   error: '#FF3B30',
-  headerBackground: '#0b2b2c',
+  headerBackground: '#0d1b3a',  // Dark navy blue
+  //'#0b2b2c',
 };
 
 export const darkColors = {
@@ -45,7 +46,8 @@ export const darkColors = {
   success: '#30D158',
   warning: '#FF9F0A',
   error: '#FF453A',
-  headerBackground: '#0a1a1a',
+  headerBackground:'#0d1b3a',  // Dark navy blue
+  //'#0a1a1a',
 };
 
 interface ThemeContextType {

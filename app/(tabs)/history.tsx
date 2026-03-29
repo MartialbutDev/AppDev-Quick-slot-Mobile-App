@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 export default function HistoryScreen() {
   const { colors } = useTheme();
-
+//data
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { 
@@ -23,7 +23,7 @@ export default function HistoryScreen() {
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={() => router.push('/orders/history')}
-          
+
         >
           <Text style={styles.buttonText}>View Order History</Text>
         </TouchableOpacity>

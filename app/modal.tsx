@@ -102,11 +102,11 @@ export default function SignupModal() {
       // Save user data and token
       await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
       await AsyncStorage.setItem('authToken', response.token);
-      
+
 
       console.log('✅ Signup successful:', response.user.fullName);
       
-      // Show success message with options
+      // Show Success message with options
       Alert.alert(
         'Welcome to QuickSlot!', 
         `Account created successfully! Welcome, ${response.user.fullName}!`,

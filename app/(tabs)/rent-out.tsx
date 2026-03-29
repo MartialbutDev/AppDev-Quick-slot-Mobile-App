@@ -58,7 +58,7 @@ export default function RentOutScreen() {
       Alert.alert('Permission required', 'Sorry, we need camera roll permissions to upload images.');
       return;
     }
-    
+
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -135,7 +135,7 @@ export default function RentOutScreen() {
     setIsSubmitting(true);
 
     try {
-      // Here you would typically send the data to your backend
+      // Here You would typically send the data to your backend
       console.log('Submitting product:', form);
       
       // Simulate API call

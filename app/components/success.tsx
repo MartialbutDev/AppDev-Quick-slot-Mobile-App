@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
-
+//success
 export default function SuccessScreen() {
   const params = useLocalSearchParams();
   const { colors } = useTheme();

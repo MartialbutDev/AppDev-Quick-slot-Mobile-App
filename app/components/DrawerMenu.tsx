@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -41,6 +42,7 @@ export default function DrawerMenu({
 }: DrawerMenuProps) {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const { colors } = useTheme();
   
 
@@ -77,7 +79,7 @@ export default function DrawerMenu({
     },
   ];
 
-  // Load favorites count when menu opens
+  // Load Favorites count when menu opens
   useEffect(() => {
     loadFavoritesCount();
   }, []);
@@ -149,6 +151,44 @@ const handleLogout = async () => {
     }
   };
 
+  // Load profile image when component mounts
+  useEffect(() => {
+    loadProfileImage();
+  }, []);
+
+  const loadProfileImage = async () => {
+    try {
+      const image = await AsyncStorage.getItem('profileImage');
+      if (image) {
+        setProfileImage(image);
+      }
+    } catch (error) {
+      console.error('Error loading profile image:', error);
+    }
+  };
+
+  const pickImage = async () => {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert('Permission needed', 'Please grant permission to access your photos');
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.8,
+  });
+
+  if (!result.canceled) {
+    const imageUri = result.assets[0].uri;
+    setProfileImage(imageUri);
+    await AsyncStorage.setItem('profileImage', imageUri);
+    Alert.alert('Success', 'Profile picture updated!');
+  }
+};
+
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       {/* Header with User Info */}
@@ -156,21 +196,33 @@ const handleLogout = async () => {
         backgroundColor: colors.surface,
         borderBottomColor: colors.border
       }]}>
-        <View style={styles.userInfoSection}>
-          <Image 
-            source={require('../../assets/images/Quickslot.png')}
-            style={styles.userImage}
-          />
-          <View style={styles.userTextInfo}>
-            <Text style={[styles.userName, { color: colors.text }]}>
-              {currentUser?.fullName || 'Name Surname'}
-            </Text>
-            <Text style={[styles.userBio, { color: colors.textSecondary }]}>
-              Ready to rent some gadgets?
-            </Text>
-          </View>
+    <View style={styles.userInfoSection}>
+      <View style={styles.profileImageContainer}>
+        <TouchableOpacity onPress={pickImage}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.userImage} />
+          ) : (
+            <View style={[styles.userImagePlaceholder, { backgroundColor: colors.primary }]}>
+              <Text style={styles.userImageInitials}>
+                {currentUser?.fullName?.charAt(0) || 'U'}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        <View style={styles.cameraIcon}>
+          <Ionicons name="camera" size={14} color="#fff" />
         </View>
       </View>
+      <View style={styles.userTextInfo}>
+        <Text style={[styles.userName, { color: colors.text }]}>
+          {currentUser?.fullName || 'Name Surname'}
+        </Text>
+        <Text style={[styles.userBio, { color: colors.textSecondary }]}>
+          Ready to rent some gadgets?
+        </Text>
+      </View>
+    </View>
+  </View>
 
       <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
         {/* Menu Sections */}
@@ -255,7 +307,7 @@ const handleLogout = async () => {
       </View>
     </View>
   );
-}
+ }
 
 const styles = StyleSheet.create({
   container: {
@@ -271,10 +323,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  profileImageContainer: {
+    position: 'relative',
+  },
   userImage: {
     width: 60,
     height: 60,
     borderRadius: 30,
+  },
+  userImagePlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userImageInitials: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   userTextInfo: {
     flex: 1,

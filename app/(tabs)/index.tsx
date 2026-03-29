@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
-// Use the centralized API client instead of inline
+// Use the Centralized API client instead of inline
 import { apiClient } from '../api/client';
 
 
@@ -334,8 +334,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 150,
+    height: 70,
     resizeMode: 'contain',
     marginBottom: 15,
   },

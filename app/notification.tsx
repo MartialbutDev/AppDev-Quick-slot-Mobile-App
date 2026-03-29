@@ -17,11 +17,11 @@ export default function NotificationScreen() {
   const handleBack = () => {
     router.back();
   };
-  
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
+      {/* header */}
       <View style={[styles.header, { 
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 

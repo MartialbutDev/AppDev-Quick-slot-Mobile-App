@@ -796,7 +796,7 @@ app.get('/api/debug/users-with-passwords', (req, res) => {
   });
 });
 
-// Debug endpoint to see all orders
+// Debug Endpoint to see all orders
 app.get('/api/debug/orders', (req, res) => {
   res.json({
     totalOrders: orders.length,

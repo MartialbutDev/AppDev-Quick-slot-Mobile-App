@@ -18,7 +18,7 @@ export default function TabLayout() {
   const [isLoading, setIsLoading] = useState(true);
   const { colors } = useTheme();
 
-  // Function to check authentication status
+  // Function to Check authentication status
   const checkAuth = async (): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -121,7 +121,6 @@ export default function TabLayout() {
             display: 'none',
           },
           headerShown: false,
-          // Prevent swipe gestures on login screen
           animation: 'none',
         }}
       >
@@ -129,45 +128,21 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'Login',
-            // Prevent going back to tabs from login
             headerLeft: () => null,
           }}
         />
-        <Tabs.Screen
-          name="explore"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="search"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="rent-out"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="history"
-          options={{
-            href: null,
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            href: null,
-          }}
-        />
+        {/* Hide all other screens when not authenticated */}
+        <Tabs.Screen name="explore" options={{ href: null }} />
+        <Tabs.Screen name="search" options={{ href: null }} />
+        <Tabs.Screen name="rent-out" options={{ href: null }} />
+        <Tabs.Screen name="history" options={{ href: null }} />
+        <Tabs.Screen name="profile" options={{ href: null }} />
+        {/* REMOVE messages and settings from here - they're not needed in unauthenticated state */}
       </Tabs>
     );
   }
 
-  // Show full tab bar when authenticated
+  // Show full tab bar when authenticated - ONLY 5 TABS
   console.log('✅ User authenticated, showing tabs');
   return (
     <Tabs
@@ -181,7 +156,6 @@ export default function TabLayout() {
           height: 60,
           paddingBottom: 8,
           paddingTop: 8,
-          // Add shadow for better visibility
           shadowColor: colors.shadow,
           shadowOffset: {
             width: 0,
@@ -192,7 +166,6 @@ export default function TabLayout() {
           elevation: 8,
         },
         headerShown: false,
-        // Smooth tab transitions
         animation: 'shift',
         tabBarLabelStyle: {
           fontSize: 12,
@@ -200,6 +173,7 @@ export default function TabLayout() {
         },
       }}
     >
+      {/* Hide index tab */}
       <Tabs.Screen
         name="index"
         options={{
@@ -207,41 +181,37 @@ export default function TabLayout() {
         }}
       />
       
+      {/* TAB 1: HOME */}
       <Tabs.Screen
         name="explore"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={focused ? styles.iconContainerActive : undefined}>
-              <Ionicons 
-                name={focused ? "home" : "home-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons 
+              name={focused ? "home" : "home-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
-          // Add badge for notifications
-          tabBarBadge: undefined, // You can add notification count here
         }}
       />
       
+      {/* TAB 2: SEARCH */}
       <Tabs.Screen
         name="search"
         options={{
           title: 'Search',
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={focused ? styles.iconContainerActive : undefined}>
-              <Ionicons 
-                name={focused ? "search" : "search-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons 
+              name={focused ? "search" : "search-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
         }}
       />
       
-      {/* Custom Rent Out Button */}
+      {/* TAB 3: RENT OUT BUTTON */}
       <Tabs.Screen
         name="rent-out"
         options={{
@@ -254,48 +224,56 @@ export default function TabLayout() {
                 transform: [{ scale: focused ? 1.1 : 1 }]
               }
             ]}>
-              <Ionicons 
-                name="add" 
-                size={28} 
-                color="#fff" 
-              />
+              <Ionicons name="add" size={28} color="#fff" />
             </View>
           ),
           tabBarLabel: () => null,
         }}
       />
       
+      {/* TAB 4: HISTORY */}
       <Tabs.Screen
         name="history"
         options={{
           title: 'History',
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={focused ? styles.iconContainerActive : undefined}>
-              <Ionicons 
-                name={focused ? "time" : "time-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons 
+              name={focused ? "time" : "time-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
-          // Add badge for new orders
-          tabBarBadge: undefined,
         }}
       />
       
+      {/* TAB 5: PROFILE */}
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size, focused }) => (
-            <View style={focused ? styles.iconContainerActive : undefined}>
-              <Ionicons 
-                name={focused ? "person" : "person-outline"} 
-                size={size} 
-                color={color} 
-              />
-            </View>
+            <Ionicons 
+              name={focused ? "person" : "person-outline"} 
+              size={size} 
+              color={color} 
+            />
           ),
+        }}
+      />
+      
+      {/* MESSAGES - NOT in tab bar, but accessible via navigation */}
+      <Tabs.Screen
+        name="messages"
+        options={{
+          href: null,  // This hides it from tab bar
+        }}
+      />
+      
+      {/* SETTINGS - NOT in tab bar, but accessible via navigation */}
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null,  // This hides it from tab bar
         }}
       />
     </Tabs>
@@ -336,7 +314,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-    // Pulse animation on press
     transitionProperty: 'transform',
     transitionDuration: '200ms',
   },

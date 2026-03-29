@@ -13,7 +13,7 @@ export default function AddressScreen() {
   const { colors } = useTheme();
 
   const handleSave = () => {
-    // Save logic here
+    // Save Logic here
     alert('Address updated successfully!');
   };
 
@@ -97,7 +97,7 @@ export default function AddressScreen() {
             placeholderTextColor={colors.placeholder}
           />
         </View>
-        
+
 
         <TouchableOpacity 
           style={[styles.saveButton, { backgroundColor: colors.primary }]}

@@ -50,7 +50,7 @@ export default function ProductDetailScreen() {
   // Mock product images (in real app, you'd have multiple images)
   const productImages = [
     product.image,
-    product.image, // Using same image as placeholder
+    product.image, // Using Same image as placeholder
     product.image, // Using same image as placeholder
   ];
 

@@ -27,7 +27,7 @@ const SearchScreen: React.FC = () => {
   const [recentKeywords, setRecentKeywords] = useState<string[]>(['Laptop', 'Camera', 'Calculate']);
   const { colors } = useTheme();
 
-  // Mock data for suggested users
+  // Mock Data for suggested users
   const suggestedUsers: SearchResult[] = [
     {
       id: '1',
@@ -58,7 +58,7 @@ const SearchScreen: React.FC = () => {
       type: 'product'
     },
   ];
-  
+
 
   const filteredUsers = suggestedUsers.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())

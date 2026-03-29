@@ -167,7 +167,7 @@ export default function OrderDetailScreen() {
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 
       }]}>
-        
+
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -176,7 +176,7 @@ export default function OrderDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Order Status */}
+        {/* Order status */}
         <View style={[styles.section, { borderBottomColor: colors.border }]}>
           <View style={styles.statusContainer}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
