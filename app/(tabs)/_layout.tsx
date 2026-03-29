@@ -67,10 +67,9 @@ export default function TabLayout() {
       }
     };
 
-    
     initializeAuth();
 
-    // Listen for app state changes (when app comes to foreground)
+    // Listen  for app state changes (when app comes to foreground)
     const subscription = AppState.addEventListener('change', async (nextAppState) => {
       if (nextAppState === 'active' && mounted) {
         console.log('🔄 App became active, checking auth...');

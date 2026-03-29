@@ -22,7 +22,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock data for all products
+// New Mock data for all products
 const allProducts = [
   {
     id: '1',
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     marginLeft: width * 0.85,
   },
-  // Header with Logo and  Notification
+  // Header with Logo and Notification
   header: {
     flexDirection: 'row',
     alignItems: 'center',
