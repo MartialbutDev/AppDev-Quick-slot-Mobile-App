@@ -133,6 +133,7 @@ export default function FavoritesScreen() {
       }
     });
   };
+  
 
   const renderFavoriteItem = ({ item }: { item: Favorite }) => {
     const imageSource = getProductImage(item);

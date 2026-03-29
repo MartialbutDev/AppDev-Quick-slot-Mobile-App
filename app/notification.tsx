@@ -17,6 +17,7 @@ export default function NotificationScreen() {
   const handleBack = () => {
     router.back();
   };
+  
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

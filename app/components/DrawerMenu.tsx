@@ -42,6 +42,7 @@ export default function DrawerMenu({
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
   const { colors } = useTheme();
+  
 
   const menuSections: MenuSection[] = [
     {

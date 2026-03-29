@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     marginLeft: width * 0.85,
   },
-  // Header with Logo and Notification
+  // Header with Logo and  Notification
   header: {
     flexDirection: 'row',
     alignItems: 'center',

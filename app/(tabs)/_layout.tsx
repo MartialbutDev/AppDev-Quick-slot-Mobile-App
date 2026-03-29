@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text // ✅ Added missing import
   ,
+
   View
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
@@ -66,6 +67,7 @@ export default function TabLayout() {
       }
     };
 
+    
     initializeAuth();
 
     // Listen for app state changes (when app comes to foreground)

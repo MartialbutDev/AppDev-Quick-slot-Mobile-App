@@ -305,7 +305,41 @@
       },
       "createdAt": "2026-03-06T02:47:03.439Z",
       "updatedAt": "2026-03-06T02:47:03.439Z"
+    },
+    {
+      "id": 19,
+      "fullName": "Varren Meg Naive",
+      "studentId": "2025306537",
+      "email": "john.doe@gmail.com",
+      "password": "$2a$10$ODdrY5owcAXlNRzEw/syWei.kkPr/lz1oSAnzZviNB2THTh6Ep7cO",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-03-22T13:24:17.882Z",
+      "updatedAt": "2026-03-22T13:24:17.882Z"
+    },
+    {
+      "id": 20,
+      "fullName": "Varren Meg Naive",
+      "studentId": "09639216056",
+      "email": "admin@gmail.com",
+      "password": "$2a$10$39I6oXycfI7RnJqxbwSCh.PV0Kxk5CD9vBV8cZrvmHngx4hTyonQu",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-03-29T06:39:51.161Z",
+      "updatedAt": "2026-03-29T06:39:51.162Z"
     }
   ],
-  "nextId": 19
+  "nextId": 21
 }

@@ -23,6 +23,7 @@ export default function PersonalInfoScreen() {
   const { colors } = useTheme();
 
   // Load current user data
+  
   useEffect(() => {
     loadUserData();
   }, []);

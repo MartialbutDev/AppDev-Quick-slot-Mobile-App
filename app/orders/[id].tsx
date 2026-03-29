@@ -167,6 +167,7 @@ export default function OrderDetailScreen() {
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 
       }]}>
+        
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>

@@ -14,6 +14,7 @@ import {
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
+
 interface Product {
   id: string;
   name: string;

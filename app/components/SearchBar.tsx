@@ -13,6 +13,7 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
+
 const SearchBar: React.FC<SearchBarProps> = ({ 
   onSearchPress, 
   placeholder = "Search User" 

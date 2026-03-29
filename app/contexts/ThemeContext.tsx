@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 // Color schemes for light and dark mode
+
 export const lightColors = {
   background: '#fff',
   surface: '#fff',

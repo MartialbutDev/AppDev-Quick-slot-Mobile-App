@@ -79,6 +79,7 @@ export default function FavoritesScreen() {
 
   const handleProductPress = (favorite: Favorite) => {
     // Navigate to product detail page
+    
     router.push({
       pathname: '../components/product-detail',
       params: { 

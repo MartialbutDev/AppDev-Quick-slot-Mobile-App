@@ -23,6 +23,7 @@ export default function HistoryScreen() {
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={() => router.push('/orders/history')}
+          
         >
           <Text style={styles.buttonText}>View Order History</Text>
         </TouchableOpacity>

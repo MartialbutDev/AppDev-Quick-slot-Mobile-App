@@ -102,6 +102,7 @@ export default function SignupModal() {
       // Save user data and token
       await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
       await AsyncStorage.setItem('authToken', response.token);
+      
 
       console.log('✅ Signup successful:', response.user.fullName);
       

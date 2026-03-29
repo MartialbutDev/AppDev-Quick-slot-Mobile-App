@@ -58,6 +58,7 @@ const SearchScreen: React.FC = () => {
       type: 'product'
     },
   ];
+  
 
   const filteredUsers = suggestedUsers.filter(user =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())

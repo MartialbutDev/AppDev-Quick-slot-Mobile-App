@@ -6,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 export default function SearchScreen() {
   const { colors } = useTheme();
+  
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

@@ -36,6 +36,7 @@ interface Review {
   date: string;
 }
 
+
 export default function ProductDetailScreen() {
   const params = useLocalSearchParams();
   const product = JSON.parse(params.product as string) as Product;

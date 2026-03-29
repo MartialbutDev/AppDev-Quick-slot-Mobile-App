@@ -58,6 +58,7 @@ export default function RentOutScreen() {
       Alert.alert('Permission required', 'Sorry, we need camera roll permissions to upload images.');
       return;
     }
+    
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
