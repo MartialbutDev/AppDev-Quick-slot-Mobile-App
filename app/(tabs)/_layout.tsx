@@ -6,9 +6,7 @@ import {
   ActivityIndicator,
   AppState,
   StyleSheet,
-  Text // ✅ Added missing import
-  ,
-
+  Text,
   View
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
