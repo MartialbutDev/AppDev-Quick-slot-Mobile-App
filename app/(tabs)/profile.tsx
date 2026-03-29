@@ -5,8 +5,8 @@ import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProfileScreen() {
-  const { colors } = useTheme(); 
-  //new update
+  const { colors } = useTheme();
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { 
@@ -30,6 +30,7 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

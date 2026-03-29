@@ -22,7 +22,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-// New Mock data for all products
+// Mock data for all products
 const allProducts = [
   {
     id: '1',
@@ -372,7 +372,7 @@ export default function Homepage() {
         </View>
       </Modal>
 
-      {/* Main Content */}
+      {/* Main and Content */}
       <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           showsVerticalScrollIndicator={false} 
