@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // FIXED: No extra colon in the URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.1.62:5000/api'  // ✅ Correct format
+  ? 'http://192.168.1.2:5000/api'  // Correct format
   : 'https://your-production-url.com/api';
 
 export const apiClient = { 
@@ -70,12 +70,10 @@ export const apiClient = {
         throw new Error('Session expired. Please login again.');
       }
       
-      // Handle 403 Forbidden
       if (response.status === 403) {
         throw new Error('Access denied. You do not have permission to access this resource.');
       }
       
-      // Handle 404 Not Found
       if (response.status === 404) {
         console.log('⚠️ Resource not found at:', endpoint);
         // Return empty data for some endpoints instead of throwing
@@ -123,7 +121,6 @@ export const apiClient = {
         url
       });
       
-      // Handle specific network errors
       if (error.name === 'AbortError' || error.message.includes('timeout')) {
         throw new Error('Request timeout. Please try again.');
       }
@@ -134,17 +131,14 @@ export const apiClient = {
         throw new Error('Cannot connect to server. Please check your internet connection.');
       }
       
-      // Handle JSON parsing errors
       if (error.message.includes('JSON') || error.message.includes('Unexpected token')) {
         throw new Error('Server returned invalid response. Please try again.');
       }
       
-      // Re-throw the error
       throw error;
     }
   },
 
-  // Auth methods
   async signup(userData: {
     fullName: string;
     studentId: string;
@@ -158,7 +152,6 @@ export const apiClient = {
         body: JSON.stringify(userData),
       });
       
-      // Auto-login after successful signup
       if (response.token && response.user) {
         await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
         await AsyncStorage.setItem('authToken', response.token);
@@ -169,7 +162,6 @@ export const apiClient = {
     } catch (error: any) {
       console.error('❌ Signup failed:', error);
       
-      // Provide user-friendly error messages
       if (error.message.includes('already exists')) {
         throw new Error('An account with this email or student ID already exists.');
       }
@@ -202,7 +194,7 @@ export const apiClient = {
     } catch (error: any) {
       console.error('❌ Login failed:', error);
       
-      // Provide user-friendly error messages
+
       if (error.message.includes('Invalid') || error.message.includes('credentials')) {
         throw new Error('Invalid email/student ID or password. Please try again.');
       }
@@ -241,7 +233,7 @@ export const apiClient = {
     });
   },
 
-  // Address Methods
+
   async getUserAddress() {
     return this.request('/user/address');
   },
@@ -259,7 +251,6 @@ export const apiClient = {
     });
   },
 
-  // Favorites Methods
   async getFavorites() {
     try {
       const response = await this.request('/user/favorites');
@@ -303,7 +294,6 @@ export const apiClient = {
     }
   },
 
-  // Order Methods
   async getMyOrders() {
     try {
       const response = await this.request('/orders/my-orders');
@@ -391,10 +381,8 @@ export const apiClient = {
     }
   },
 
-  // Health check method
   async checkServerHealth(): Promise<boolean> {
     try {
-      // Use AbortController for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
@@ -431,7 +419,6 @@ export const apiClient = {
   },
 };
 
-// Utility function to handle API errors in components
 export const handleApiError = (error: any, customMessage?: string): string => {
   console.error('API Error:', error);
   
