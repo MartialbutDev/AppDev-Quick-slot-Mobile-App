@@ -112,7 +112,7 @@ export default function OrderDetailScreen() {
     try {
       await apiClient.updateOrderStatus(parseInt(orderId), newStatus);
       Alert.alert('Success', `Order status updated to ${newStatus}`);
-      loadOrderDetails(); // Reload order details
+      loadOrderDetails(); // Reload Order details
     } catch (error: any) {
       Alert.alert('Error', 'Failed to update order status');
     }

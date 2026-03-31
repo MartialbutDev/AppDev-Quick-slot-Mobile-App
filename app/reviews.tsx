@@ -131,7 +131,7 @@ export default function ReviewsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Reviews Header */}
+            {/* Reviews header */}
             <View style={styles.reviewsHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>User Reviews</Text>
               <Text style={[styles.reviewCount, { color: colors.textSecondary }]}>{reviews.length} reviews</Text>

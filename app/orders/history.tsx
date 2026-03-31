@@ -194,7 +194,7 @@ export default function OrderHistoryScreen() {
     </SafeAreaView>
   );
 }
-
+//styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

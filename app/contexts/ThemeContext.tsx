@@ -73,7 +73,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (savedTheme) {
         setIsDarkMode(savedTheme === 'dark');
       } else {
-        // Use system preference if no saved preference
+        // Use System preference if no saved preference
         setIsDarkMode(systemColorScheme === 'dark');
       }
     } catch (error) {

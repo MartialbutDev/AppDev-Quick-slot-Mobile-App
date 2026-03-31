@@ -34,7 +34,7 @@ export default function CategoryScreen() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [loadingFavorites, setLoadingFavorites] = useState(true);
 
-  // Mock data for different categories
+  // Mock Data for different categories
   const categoryData: { [key: string]: Product[] } = {
     '1': [ // Laptops
       {

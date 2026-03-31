@@ -27,7 +27,7 @@ export default function RootLayout() {
     prepareApp();
   }, []);
 
-  // Show loading screen while app is preparing
+  // Show Loading screen while app is preparing
   if (!isAppReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>

@@ -134,7 +134,7 @@ export default function RentOutScreen() {
     setIsSubmitting(true);
 
     try {
-      // Here you would typically send the data to your backend
+      // Here You would typically send the data to your backend
       console.log('Submitting product:', form);
       
       // Simulate API call

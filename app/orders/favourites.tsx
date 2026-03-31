@@ -33,7 +33,7 @@ export default function FavoritesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
 
-  // Function to map product names to local images
+  // Function to Map product names to local images
   const getProductImage = (favorite: Favorite) => {
     const imageMap: { [key: string]: any } = {
       'acer aspire go 15': require('../../assets/images/laptop.png'),

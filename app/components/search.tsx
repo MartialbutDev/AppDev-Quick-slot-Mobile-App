@@ -1,5 +1,5 @@
 import React from 'react';
-import SearchScreen from './SearchScreen'; // Fixed!
+import SearchScreen from './SearchScreen'; // fixed!
 
 export default function SearchPage() {
   return <SearchScreen />;

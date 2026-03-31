@@ -22,7 +22,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock data for all products
+// Mock Data for all products
 const allProducts = [
   {
     id: '1',

@@ -27,7 +27,7 @@ const SearchScreen: React.FC = () => {
   const [recentKeywords, setRecentKeywords] = useState<string[]>(['Laptop', 'Camera', 'Calculate']);
   const { colors } = useTheme();
 
-  // Mock data for suggested users
+  // Mock Data for suggested users
   const suggestedUsers: SearchResult[] = [
     {
       id: '1',

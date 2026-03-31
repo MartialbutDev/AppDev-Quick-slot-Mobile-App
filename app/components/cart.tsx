@@ -99,7 +99,7 @@ export const useCart = () => {
   return context;
 };
 
-// Cart Screen Component
+// Cart screen Component
 export default function CartScreen() {
   const { cartItems, removeFromCart, updateCartItem, getTotalPrice, clearCart } = useCart();
   const { colors } = useTheme();

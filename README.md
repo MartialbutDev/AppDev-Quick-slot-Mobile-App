@@ -52,3 +52,4 @@ Join our community of developers creating universal apps.
 =======
 # Quick-slot-Mobile-app
 >>>>>>> 0d1127537ef9a69a0b681b6a66b061a8069921e2
+

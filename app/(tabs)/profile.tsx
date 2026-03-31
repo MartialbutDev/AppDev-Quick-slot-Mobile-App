@@ -14,7 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProfileScreen() {
@@ -53,7 +52,7 @@ export default function ProfileScreen() {
   };
 
   const pickImage = async () => {
-    // Request permissions
+    // Request Permissions
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {

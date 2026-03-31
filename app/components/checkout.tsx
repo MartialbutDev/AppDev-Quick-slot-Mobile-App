@@ -168,7 +168,7 @@ export default function CheckoutScreen() {
         />
       </View>
 
-      {/* Email Address */}
+      {/* Email address */}
       <View style={styles.inputContainer}>
         <Text style={[styles.inputLabel, { color: colors.text }]}>Email Address</Text>
         <TextInput

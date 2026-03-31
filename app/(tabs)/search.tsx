@@ -34,6 +34,7 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
+//styles
 
 const styles = StyleSheet.create({
   container: {

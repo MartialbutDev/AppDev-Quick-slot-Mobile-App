@@ -46,7 +46,7 @@ export default function ProductDetailScreen() {
   const [rentalDuration, setRentalDuration] = useState<'hours' | 'days' | 'weeks'>('hours');
   const [quantity, setQuantity] = useState(1);
 
-  // Mock product images (in real app, you'd have multiple images)
+  // Mock Product images (in real app, you'd have multiple images)
   const productImages = [
     product.image,
     product.image, // Using same image as placeholder

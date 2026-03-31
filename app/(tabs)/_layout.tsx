@@ -18,7 +18,7 @@ export default function TabLayout() {
   const [isLoading, setIsLoading] = useState(true);
   const { colors } = useTheme();
 
-  // Function to check authentication status
+  // Function to Check authentication status
   const checkAuth = async (): Promise<boolean> => {
     try {
       setIsLoading(true);

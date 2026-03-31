@@ -14,7 +14,7 @@ import { useTheme } from './contexts/ThemeContext';
 export default function PaymentMethodsScreen() {
   const { colors } = useTheme();
   
-  // Payment methods available for face-to-face rental
+  // Payment Methods available for face-to-face rental
   const [paymentMethods, setPaymentMethods] = useState([
     { 
       id: '1', 

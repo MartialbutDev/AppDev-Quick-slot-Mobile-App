@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 
-// Use the centralized API client instead of inline
+// Use the Centralized API client instead of inline
 import { apiClient } from '../api/client';
 
 export default function LoginScreen() {

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -13,7 +14,6 @@ import {
 } from 'react-native';
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
-import * as ImagePicker from 'expo-image-picker';
 
 interface DrawerMenuProps {
   currentUser: any;
@@ -78,7 +78,7 @@ export default function DrawerMenu({
     },
   ];
 
-  // Load favorites count when menu opens
+  // Load Favorites count when menu opens
   useEffect(() => {
     loadFavoritesCount();
   }, []);

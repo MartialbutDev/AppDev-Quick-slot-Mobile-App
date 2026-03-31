@@ -43,7 +43,7 @@ export default function ChangePasswordScreen() {
     try {
       console.log('📡 Calling API to change password...');
       
-      // ACTUALLY call the backend API
+      // ACTUALLY Call the backend API
       const response = await apiClient.changePassword({
         currentPassword,
         newPassword,

@@ -42,6 +42,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     </TouchableOpacity>
   );
 };
+//styles
 
 const styles = StyleSheet.create({
   searchInputContainer: {

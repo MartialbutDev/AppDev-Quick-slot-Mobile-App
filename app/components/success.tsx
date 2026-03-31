@@ -238,6 +238,7 @@ export default function SuccessScreen() {
     </SafeAreaView>
   );
 }
+//styles
 
 const styles = StyleSheet.create({
   container: {

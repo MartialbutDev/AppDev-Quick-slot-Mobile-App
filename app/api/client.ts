@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // FIXED: No extra colon in the URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.1.62:5000/api'  // ✅ Correct format
+  ? 'http://192.168.1.63:5000/api'  // ✅ Correct format
   : 'https://your-production-url.com/api';
 
 export const apiClient = { 

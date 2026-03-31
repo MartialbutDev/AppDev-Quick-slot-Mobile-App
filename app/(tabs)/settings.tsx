@@ -120,6 +120,8 @@ export default function SettingsScreen() {
           </View>
         ))}
 
+        //test
+
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: colors.error + '10' }]}
           onPress={handleLogout}
