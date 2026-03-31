@@ -339,7 +339,58 @@
       },
       "createdAt": "2026-03-29T06:39:51.161Z",
       "updatedAt": "2026-03-29T06:39:51.162Z"
+    },
+    {
+      "id": 21,
+      "fullName": "Shanmae De gala",
+      "studentId": "2022306537",
+      "email": "shanmae@gmail.com",
+      "password": "$2a$10$we.xf.TSYEv2o0KVy5ng3eJSzgmChZUbiVwtqAOhFA.FG2FcCgI4C",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-03-29T09:51:27.476Z",
+      "updatedAt": "2026-03-29T09:51:27.476Z"
+    },
+    {
+      "id": 22,
+      "fullName": "Theo vasquez",
+      "studentId": "2020306537",
+      "email": "theo@gmail.com",
+      "password": "$2a$10$OC1u21gS1NTlWcy2CMk7C.JF4.4bo67Q46laYxoDuOOALAzjb84l2",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-03-31T04:52:44.626Z",
+      "updatedAt": "2026-03-31T04:52:44.627Z"
+    },
+    {
+      "id": 23,
+      "fullName": "Nicolette S. Nabalan",
+      "studentId": "02-2223-06376",
+      "email": "nabalannics@gmail.com",
+      "password": "$2a$10$CD294Vkb/IFi8ubKqP6oUu8/KVjyy1AsKo5ZN7y0bJH4hITd0xuS2",
+      "phone": "",
+      "address": {
+        "street": "",
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-03-31T08:48:48.195Z",
+      "updatedAt": "2026-03-31T08:48:48.195Z"
     }
   ],
-  "nextId": 21
+  "nextId": 24
 }
