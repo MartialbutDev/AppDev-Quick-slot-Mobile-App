@@ -1,7 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { 
+  Alert, 
+  Image, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  View 
+} from 'react-native';
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -20,11 +31,13 @@ export default function PersonalInfoScreen() {
     email: '',
     phone: '',
   });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const { colors } = useTheme();
 
   // Load current user data
   useEffect(() => {
     loadUserData();
+    loadProfileImage();
   }, []);
 
   const loadUserData = async () => {
@@ -44,6 +57,45 @@ export default function PersonalInfoScreen() {
     } catch (error) {
       console.error('Error loading user data:', error);
       Alert.alert('Error', 'Failed to load user data');
+    }
+  };
+
+  const loadProfileImage = async () => {
+    try {
+      const image = await AsyncStorage.getItem('profileImage');
+      if (image) {
+        setProfileImage(image);
+      }
+    } catch (error) {
+      console.error('Error loading profile image:', error);
+    }
+  };
+
+  const pickImage = async () => {
+    // Request permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant permission to access your photos');
+      return;
+    }
+
+    // Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('profileImage', imageUri);
+      
+      Alert.alert('Success', 'Profile picture updated!');
     }
   };
 
@@ -114,6 +166,25 @@ export default function PersonalInfoScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Profile Picture Section - EDITABLE HERE */}
+      <View style={[styles.profileImageSection, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.primary + '20' }]}>
+              <Text style={[styles.profileInitials, { color: colors.primary }]}>
+                {formData.fullName.charAt(0) || 'U'}
+              </Text>
+            </View>
+          )}
+          <View style={[styles.editIcon, { backgroundColor: colors.primary }]}>
+            <Ionicons name="camera" size={16} color="#fff" />
+          </View>
+        </TouchableOpacity>
+        <Text style={[styles.editPhotoText, { color: colors.primary }]}>Tap to change profile picture</Text>
+      </View>
+
       <Text style={[styles.title, { color: colors.text }]}>Personal Information</Text>
       
       <View style={styles.form}>
@@ -209,6 +280,48 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  profileImageSection: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 20,
+    borderRadius: 12,
+  },
+  profileImageContainer: {
+    position: 'relative',
+    marginBottom: 8,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileInitials: {
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  editPhotoText: {
+    fontSize: 12,
+    marginTop: 4,
   },
   title: {
     fontSize: 24,
