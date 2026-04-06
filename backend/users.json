@@ -373,17 +373,24 @@
       },
       "createdAt": "2026-03-31T04:52:44.626Z",
       "updatedAt": "2026-03-31T04:52:44.627Z"
-    }
-  ],
-  "nextId": 23
-,
-      "fullName": "Varren Meg Naive",
-      "studentId": "2025306537",
-      "email": "john.doe@gmail.com",
-      "password": "$2a$10$ODdrY5owcAXlNRzEw/syWei.kkPr/lz1oSAnzZviNB2THTh6Ep7cO",
+    },
+    {
+      "id": 23,
+      "fullName": "ellyza",
+      "studentId": "123456",
+      "email": "ellyza@gmail.com",
+      "password": "$2a$10$eRmCVeZYZI0OLeclqL6iMuGhkg7FNGw.TS9S1L0r5E8r8/55S00wK",
       "phone": "",
       "address": {
         "street": "",
-        "city": ""
-            }
+        "city": "",
+        "state": "",
+        "zipCode": "",
+        "country": ""
+      },
+      "createdAt": "2026-04-06T14:41:02.365Z",
+      "updatedAt": "2026-04-06T14:41:02.365Z"
+    }
+  ],
+  "nextId": 24
 }
