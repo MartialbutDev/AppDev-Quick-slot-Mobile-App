@@ -1,11 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   SafeAreaView,
   ScrollView,
@@ -14,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProfileScreen() {
@@ -26,6 +23,13 @@ export default function ProfileScreen() {
   useEffect(() => {
     loadUserProfile();
     loadProfileImage();
+    
+    // Refresh profile image when updated from personal info
+    const interval = setInterval(() => {
+      loadProfileImage();
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadUserProfile = async () => {
@@ -52,49 +56,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const pickImage = async () => {
-    // Request permissions
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please grant permission to access your photos');
-      return;
-    }
-
-    // Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-      base64: true,
-    });
-
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      setProfileImage(imageUri);
-      
-      // Save to AsyncStorage
-      await AsyncStorage.setItem('profileImage', imageUri);
-      
-      // Here you would upload to your backend
-      // await uploadProfileImage(imageUri);
-      
-      Alert.alert('Success', 'Profile picture updated!');
-    }
-  };
-
-  const menuItems = [
-    { icon: 'person-outline', label: 'Personal Information', route: '/profile/personal-info' },
-    { icon: 'card-outline', label: 'Payment Methods', route: '/payment-methods' },
-    { icon: 'chatbubble-outline', label: 'Messages', route: '/messages' },
-    { icon: 'star-outline', label: 'Reviews', route: '/reviews' },
-    { icon: 'help-circle-outline', label: 'FAQs', route: '/faqs' },
-    { icon: 'settings-outline', label: 'Settings', route: '/settings' },
-    { icon: 'location-outline', label: 'Address', route: '/profile/address' },
-    { icon: 'lock-closed-outline', label: 'Change Password', route: '/profile/change-password' },
-  ];
-
   if (loading) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -106,9 +67,9 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
+        {/* Profile Header - PURELY VIEW ONLY - NO CAMERA ICON */}
         <View style={[styles.profileHeader, { backgroundColor: colors.surface }]}>
-          <TouchableOpacity onPress={pickImage} style={styles.profileImageContainer}>
+          <View style={styles.profileImageContainer}>
             {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
             ) : (
@@ -118,10 +79,8 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             )}
-            <View style={[styles.editIcon, { backgroundColor: colors.primary }]}>
-              <Ionicons name="camera" size={16} color="#fff" />
-            </View>
-          </TouchableOpacity>
+            {/* NO CAMERA ICON HERE - View only */}
+          </View>
           
           <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || 'User'}</Text>
           <Text style={[styles.userId, { color: colors.textSecondary }]}>{user?.studentId || 'Student ID'}</Text>
@@ -130,19 +89,93 @@ export default function ProfileScreen() {
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.menuItem, { borderBottomColor: colors.border }]}
-              onPress={() => router.push(item.route as any)}
-            >
-              <View style={styles.menuLeft}>
-                <Ionicons name={item.icon as any} size={24} color={colors.primary} />
-                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
-              </View>
-              <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          ))}
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/profile/personal-info')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="person-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Personal Information</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/payment-methods')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="card-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Payment Methods</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/messages')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Messages</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/reviews')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="star-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Reviews</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/faqs')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="help-circle-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>FAQs</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/settings')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="settings-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Settings</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/profile/address')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="location-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Address</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomColor: colors.border }]}
+            onPress={() => router.push('/profile/change-password')}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="lock-closed-outline" size={24} color={colors.primary} />
+              <Text style={[styles.menuLabel, { color: colors.text }]}>Change Password</Text>
+            </View>
+            <Ionicons name="chevron-forward-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -164,9 +197,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
+    marginBottom: 16,
   },
   profileImageContainer: {
-    position: 'relative',
     marginBottom: 16,
   },
   profileImage: {
@@ -184,18 +217,6 @@ const styles = StyleSheet.create({
   profileInitials: {
     fontSize: 40,
     fontWeight: 'bold',
-  },
-  editIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#fff',
   },
   userName: {
     fontSize: 24,
