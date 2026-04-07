@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -91,7 +90,7 @@ export default function SignupModal() {
     try {
       console.log('🎯 Signup attempt for:', formData.email);
       
-      // Call the centralized API client
+      // Call the centralized API client (token is saved inside apiClient.signup)
       const response = await apiClient.signup({
         fullName: formData.fullName.trim(),
         studentId: formData.studentId.trim(),
@@ -99,16 +98,12 @@ export default function SignupModal() {
         password: formData.password,
       });
 
-      // Save user data and token
-      await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
-      await AsyncStorage.setItem('authToken', response.token);
-
-      console.log('✅ Signup successful:', response.user.fullName);
+      console.log('✅ Signup successful');
       
-      // Show Success message with options
+      // Show success message with options
       Alert.alert(
         'Welcome to QuickSlot!', 
-        `Account created successfully! Welcome, ${response.user.fullName}!`,
+        `Account created successfully! Welcome, ${formData.fullName}!`,
         [
           {
             text: 'Get Started',

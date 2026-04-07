@@ -1,9 +1,9 @@
 // app/api/client.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// FIXED: No extra colon in the URL
+// Django Backend URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.1.63:5000/api'  // ✅ Correct format
+  ? 'http://192.168.1.62:8000/api'
   : 'https://your-production-url.com/api';
 
 export const apiClient = { 
@@ -12,7 +12,6 @@ export const apiClient = {
     
     console.log('🌐 Making API request to:', url);
     console.log('📦 Request method:', options.method);
-    console.log('📦 Request body:', options.body ? 'Has body' : 'No body');
     
     // Get auth token from storage
     let token: string | null = null;
@@ -24,25 +23,25 @@ export const apiClient = {
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` }),
     };
 
     const config: RequestInit = {
+      method: options.method || 'GET',
       headers,
       ...options,
     };
 
+    if (options.body) {
+      config.body = options.body;
+    }
+
     try {
-      console.log('📡 Sending request with config:', {
-        url,
-        method: config.method,
-        hasToken: !!token,
-        endpoint
-      });
+      console.log('📡 Sending request...');
       
-      // Create AbortController for timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       
       const response = await fetch(url, {
         ...config,
@@ -51,61 +50,26 @@ export const apiClient = {
       
       clearTimeout(timeoutId);
       
-      // Get raw response text first
       const responseText = await response.text();
-      console.log('📄 Raw server response:', responseText.substring(0, 200) + '...');
       console.log('📊 Response status:', response.status);
       
-      // Handle 401 Unauthorized (token expired or invalid)
       if (response.status === 401) {
-        console.log('🔐 Token expired or invalid');
-        
-        // Clear invalid token
-        try {
-          await AsyncStorage.multiRemove(['authToken', 'currentUser']);
-        } catch (error) {
-          console.log('Error clearing auth data:', error);
-        }
-        
+        console.log('🔐 Token expired');
+        await AsyncStorage.multiRemove(['authToken', 'currentUser']);
         throw new Error('Session expired. Please login again.');
       }
       
-      // Handle 403 Forbidden
-      if (response.status === 403) {
-        throw new Error('Access denied. You do not have permission to access this resource.');
-      }
-      
-      // Handle 404 Not Found
-      if (response.status === 404) {
-        console.log('⚠️ Resource not found at:', endpoint);
-        // Return empty data for some endpoints instead of throwing
-        if (endpoint.includes('/favorites') || endpoint.includes('/orders')) {
-          console.log('ℹ️ Returning empty array for:', endpoint);
-          return { data: [], total: 0 };
-        }
-        throw new Error(`Resource not found: ${endpoint}`);
-      }
-      
-      // Handle 500 Internal Server Error
-      if (response.status >= 500) {
-        throw new Error('Server error. Please try again later.');
-      }
-      
       if (!response.ok) {
-        // Try to parse error message from response
         let errorMessage = `Server error: ${response.status}`;
         try {
-          if (responseText) {
-            const errorData = JSON.parse(responseText);
-            errorMessage = errorData.error || errorData.message || responseText;
-          }
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorData.message || responseText;
         } catch {
           errorMessage = responseText || `Server error: ${response.status}`;
         }
         throw new Error(errorMessage);
       }
 
-      // Parse successful response
       let data;
       try {
         data = responseText ? JSON.parse(responseText) : {};
@@ -114,232 +78,294 @@ export const apiClient = {
         throw new Error('Invalid server response');
       }
       
-      console.log('✅ Parsed response data for:', endpoint);
+      console.log('✅ Request successful');
       return data;
     } catch (error: any) {
-      console.error('❌ API Request failed:', {
-        endpoint,
-        error: error.message,
-        url
-      });
+      console.error('❌ API Request failed:', error.message);
       
-      // Handle specific network errors
-      if (error.name === 'AbortError' || error.message.includes('timeout')) {
+      if (error.name === 'AbortError') {
         throw new Error('Request timeout. Please try again.');
       }
       
-      if (error.message.includes('Network request failed') || 
-          error.message.includes('fetch failed') ||
-          error.message.includes('network')) {
+      if (error.message.includes('Network request failed')) {
         throw new Error('Cannot connect to server. Please check your internet connection.');
       }
       
-      // Handle JSON parsing errors
-      if (error.message.includes('JSON') || error.message.includes('Unexpected token')) {
-        throw new Error('Server returned invalid response. Please try again.');
-      }
-      
-      // Re-throw the error
       throw error;
     }
   },
 
-  // Auth methods
+  // ============ AUTH METHODS ============
+  
   async signup(userData: {
     fullName: string;
     studentId: string;
     email: string;
     password: string;
   }) {
-    console.log('🚀 Starting signup process for:', userData.email);
+    console.log('🚀 Starting signup for:', userData.email);
     try {
-      const response = await this.request('/auth/signup', {
+      const requestBody = {
+        username: userData.email.split('@')[0],
+        email: userData.email,
+        password: userData.password,
+        first_name: userData.fullName.split(' ')[0],
+        last_name: userData.fullName.split(' ').slice(1).join(' '),
+        student_id: userData.studentId,
+        user_type: 'student'
+      };
+      
+      const response = await this.request('/auth/register/', {
         method: 'POST',
-        body: JSON.stringify(userData),
+        body: JSON.stringify(requestBody),
       });
       
-      // Auto-login after successful signup
-      if (response.token && response.user) {
-        await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
-        await AsyncStorage.setItem('authToken', response.token);
-        console.log('✅ Signup successful, user auto-logged in:', response.user.fullName);
+      const authToken = response.access || response.token;
+      
+      if (authToken && response.user) {
+        const transformedUser = {
+          id: response.user.id,
+          fullName: `${response.user.first_name} ${response.user.last_name}`.trim(),
+          studentId: response.user.student_id,
+          email: response.user.email,
+          phone: response.user.phone || '',
+          userType: response.user.user_type,
+          status: response.user.status,
+          token: authToken
+        };
+        
+        await AsyncStorage.setItem('currentUser', JSON.stringify(transformedUser));
+        await AsyncStorage.setItem('authToken', authToken);
+        console.log('✅ Signup successful');
       }
       
       return response;
     } catch (error: any) {
       console.error('❌ Signup failed:', error);
-      
-      // Provide user-friendly error messages
-      if (error.message.includes('already exists')) {
-        throw new Error('An account with this email or student ID already exists.');
-      }
-      if (error.message.includes('password') || error.message.includes('6 characters')) {
-        throw new Error('Password must be at least 6 characters long.');
-      }
-      if (error.message.includes('email') || error.message.includes('valid')) {
-        throw new Error('Please enter a valid email address.');
-      }
-      
       throw error;
     }
   },
 
   async login(credentials: { username: string; password: string }) {
-    console.log('🔐 Starting login for:', credentials.username);
+    console.log('🔐 Login attempt for:', credentials.username);
     try {
-      const response = await this.request('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-      });
+      let requestBody;
+      const input = credentials.username.trim();
       
-      if (response.token && response.user) {
-        await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
-        await AsyncStorage.setItem('authToken', response.token);
-        console.log('✅ Login successful for:', response.user.fullName);
+      // Check if input is an email
+      if (input.includes('@')) {
+        requestBody = { email: input, password: credentials.password };
+        console.log('📦 Using email login');
+      } 
+      // Check if input is a student ID (numeric)
+      else if (/^\d+$/.test(input)) {
+        requestBody = { username: input, password: credentials.password };
+        console.log('📦 Using student ID login');
+      } 
+      // Otherwise treat as username
+      else {
+        requestBody = { username: input, password: credentials.password };
+        console.log('📦 Using username login');
       }
       
-      return response;
-    } catch (error: any) {
-      console.error('❌ Login failed:', error);
+      console.log('📦 Sending login request...');
       
-      // Provide user-friendly error messages
+      const response = await this.request('/auth/login/', {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+      });
+      
+      const authToken = response.access || response.token;
+      
+      if (authToken && response.user) {
+        const transformedUser = {
+          id: response.user.id,
+          fullName: `${response.user.first_name} ${response.user.last_name}`.trim(),
+          studentId: response.user.student_id,
+          email: response.user.email,
+          phone: response.user.phone || '',
+          userType: response.user.user_type,
+          status: response.user.status,
+          token: authToken
+        };
+        
+        await AsyncStorage.setItem('currentUser', JSON.stringify(transformedUser));
+        await AsyncStorage.setItem('authToken', authToken);
+        console.log('✅ Login successful for:', transformedUser.fullName);
+        
+        return { user: transformedUser, token: authToken };
+      } else {
+        throw new Error('Invalid server response');
+      }
+    } catch (error: any) {
+      console.error('❌ Login failed:', error.message);
+      
       if (error.message.includes('Invalid') || error.message.includes('credentials')) {
         throw new Error('Invalid email/student ID or password. Please try again.');
       }
-      if (error.message.includes('User not found')) {
-        throw new Error('No account found with this email/student ID.');
+      if (error.message.includes('not activated')) {
+        throw new Error('Your account is pending approval. Please wait for admin approval.');
       }
       
       throw error;
     }
   },
 
-  // User Profile Methods
+  // ============ USER PROFILE METHODS ============
+
   async getUserProfile() {
-    return this.request('/user/profile');
+    return this.request('/users/me/');
   },
 
-  async updateUserProfile(profileData: {
-    fullName?: string;
-    studentId?: string;
-    email?: string;
-    phone?: string;
-  }) {
-    return this.request('/user/profile', {
-      method: 'PUT',
-      body: JSON.stringify(profileData),
+  async updateUserProfile(profileData: any) {
+    const updateData: any = {};
+    if (profileData.fullName) {
+      const nameParts = profileData.fullName.split(' ');
+      updateData.first_name = nameParts[0];
+      updateData.last_name = nameParts.slice(1).join(' ');
+    }
+    if (profileData.studentId) updateData.student_id = profileData.studentId;
+    if (profileData.email) updateData.email = profileData.email;
+    if (profileData.phone) updateData.phone = profileData.phone;
+    
+    return this.request('/users/me/', {
+      method: 'PATCH',
+      body: JSON.stringify(updateData),
     });
   },
 
-  async changePassword(passwordData: {
-    currentPassword: string;
-    newPassword: string;
-  }) {
-    return this.request('/user/change-password', {
+  async changePassword(passwordData: any) {
+    return this.request('/user/change-password/', {
       method: 'PUT',
-      body: JSON.stringify(passwordData),
+      body: JSON.stringify({
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword
+      }),
     });
   },
 
-  // Address Methods
+  // ============ ADDRESS METHODS ============
+
   async getUserAddress() {
     return this.request('/user/address');
   },
 
-  async updateUserAddress(addressData: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  }) {
+  async updateUserAddress(addressData: any) {
     return this.request('/user/address', {
       method: 'PUT',
       body: JSON.stringify(addressData),
     });
   },
 
-  // Favorites Methods
+  // ============ FAVORITES ============
+
   async getFavorites() {
     try {
-      const response = await this.request('/user/favorites');
+      const response = await this.request('/favorites/');
+      const favorites = response.results || response;
       return {
-        favorites: response.favorites || [],
-        total: response.total || 0,
+        favorites: favorites.map((fav: any) => ({
+          id: fav.id,
+          productId: fav.gadget,
+          productName: fav.gadget_details?.name || '',
+          addedAt: fav.added_at
+        })),
+        total: favorites.length,
       };
-    } catch (error: any) {
-      console.log('⚠️ Favorites fetch failed:', error.message);
+    } catch (error) {
       return { favorites: [], total: 0 };
     }
   },
 
-  async addToFavorites(favoriteData: {
-    productId: string;
-    productName: string;
-    productPrice?: string;
-    productImage?: string;
-    productDescription?: string;
-    category?: string;
-  }) {
-    return this.request('/user/favorites', {
+  async addToFavorites(favoriteData: any) {
+    return this.request('/favorites/', {
       method: 'POST',
-      body: JSON.stringify(favoriteData),
+      body: JSON.stringify({ gadget: parseInt(favoriteData.productId) }),
     });
   },
 
   async removeFromFavorites(productId: string) {
-    return this.request(`/user/favorites/${productId}`, {
+    return this.request(`/favorites/remove/${productId}/`, {
       method: 'DELETE',
     });
   },
 
   async checkFavorite(productId: string) {
     try {
-      const response = await this.request(`/user/favorites/check/${productId}`);
-      return response;
+      const favorites = await this.getFavorites();
+      const isFavorite = favorites.favorites.some((fav: any) => fav.productId === productId);
+      return { isFavorite, productId };
     } catch (error) {
-      // If check fails, assume not favorite
       return { isFavorite: false, productId };
     }
   },
 
-  // Order Methods
+  // ============ RENTALS / ORDERS ============
+
   async getMyOrders() {
     try {
-      const response = await this.request('/orders/my-orders');
+      const response = await this.request('/rentals/my-rentals/');
+      const orders = response.results || response;
       return {
-        orders: response.orders || [],
-        total: response.total || 0,
+        orders: orders.map((order: any) => ({
+          id: order.id,
+          orderNumber: `QS${order.id}`,
+          items: [{
+            id: order.gadget,
+            name: order.gadget_name,
+            quantity: 1,
+            totalPrice: order.total_amount,
+          }],
+          totalAmount: order.total_amount,
+          status: order.status,
+          createdAt: order.created_at
+        })),
+        total: orders.length,
       };
     } catch (error) {
-      console.log('⚠️ Get orders failed:', error);
       return { orders: [], total: 0 };
     }
   },
 
   async getOrderHistory() {
     try {
-      const response = await this.request('/orders/history');
+      const response = await this.request('/rentals/history/');
+      const orders = response.results || response;
       return {
-        orders: response.orders || [],
-        total: response.total || 0,
+        orders: orders.map((order: any) => ({
+          id: order.id,
+          orderNumber: `QS${order.id}`,
+          items: [{
+            id: order.gadget,
+            name: order.gadget_name,
+            quantity: 1,
+            totalPrice: order.total_amount,
+          }],
+          totalAmount: order.total_amount,
+          status: order.status,
+          createdAt: order.created_at
+        })),
+        total: orders.length,
       };
     } catch (error) {
-      console.log('⚠️ Get order history failed:', error);
       return { orders: [], total: 0 };
     }
   },
 
-  async createOrder(orderData: {
-    items: any[];
-    totalAmount: number;
-    paymentMethod: string;
-    contactInfo: any;
-    specialInstructions?: string;
-  }) {
-    return this.request('/orders', {
+  async createOrder(orderData: any) {
+    const rentalData = {
+      gadget: parseInt(orderData.items[0].id),
+      rent_date: new Date().toISOString().split('T')[0],
+      expected_return: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0],
+      total_amount: orderData.totalAmount,
+      payment_method: orderData.paymentMethod,
+      contact_info: orderData.contactInfo,
+      special_instructions: orderData.specialInstructions || ''
+    };
+    
+    return this.request('/rentals/create/', {
       method: 'POST',
-      body: JSON.stringify(orderData),
+      body: JSON.stringify(rentalData),
     });
   },
 
@@ -354,7 +380,24 @@ export const apiClient = {
     });
   },
 
-  // Helper method to check authentication status
+  // ============ GADGETS ============
+
+  async getGadgets() {
+    const response = await this.request('/gadgets/');
+    return response.results || response;
+  },
+
+  async getGadgetById(id: number) {
+    return this.request(`/gadgets/${id}/`);
+  },
+
+  async getCategories() {
+    const response = await this.request('/categories/');
+    return response.results || response;
+  },
+
+  // ============ HELPER METHODS ============
+
   async checkAuth(): Promise<{ isAuthenticated: boolean; user: any | null }> {
     try {
       const [token, user] = await Promise.all([
@@ -366,35 +409,26 @@ export const apiClient = {
         return { isAuthenticated: false, user: null };
       }
       
-      // TODO: You could validate the token with the backend here
-      // const response = await this.request('/auth/validate', { method: 'GET' });
-      
       return { 
         isAuthenticated: true, 
         user: JSON.parse(user) 
       };
     } catch (error) {
-      console.error('❌ Auth check failed:', error);
       return { isAuthenticated: false, user: null };
     }
   },
 
-  // Helper method to logout
   async logout(): Promise<void> {
     try {
       await AsyncStorage.multiRemove(['currentUser', 'authToken', 'rememberedCredentials']);
-      console.log('✅ User logged out successfully');
+      console.log('✅ User logged out');
     } catch (error) {
       console.error('❌ Logout failed:', error);
-      // Still clear local storage even if backend call fails
-      await AsyncStorage.multiRemove(['currentUser', 'authToken', 'rememberedCredentials']);
     }
   },
 
-  // Health check method
   async checkServerHealth(): Promise<boolean> {
     try {
-      // Use AbortController for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
@@ -412,13 +446,11 @@ export const apiClient = {
     }
   },
 
-  // Debug method to see server status
   async debugServerStatus() {
     try {
       const health = await this.checkServerHealth();
       console.log('🏥 Server health:', health ? '✅ Healthy' : '❌ Unhealthy');
       
-      // Test a simple endpoint
       const response = await fetch(`${API_BASE_URL}/health`);
       const data = await response.json();
       console.log('📡 Server response:', data);

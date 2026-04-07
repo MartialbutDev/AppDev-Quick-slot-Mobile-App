@@ -50,7 +50,6 @@ export default function LoginScreen() {
       
       if (currentUser && authToken) {
         console.log('🔄 User already logged in, redirecting...');
-        // Small delay to show splash screen
         setTimeout(() => {
           router.replace('/(tabs)/explore');
         }, 500);
@@ -75,20 +74,12 @@ export default function LoginScreen() {
     setIsLoading(true);
     
     try {
-      console.log('🎯 Login button pressed');
+      console.log('🎯 Login attempt for:', username);
       
-      // Validate email format if it looks like an email
-      if (username.includes('@')) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(username)) {
-          throw new Error('Please enter a valid email address');
-        }
-      }
-
       // Call the centralized API client
       const response = await apiClient.login({ username, password });
       
-      // Save user session
+      // Save user session (apiClient.login already saves, but we save again for consistency)
       await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
       await AsyncStorage.setItem('authToken', response.token);
       
@@ -96,31 +87,30 @@ export default function LoginScreen() {
       if (rememberMe) {
         await AsyncStorage.setItem('rememberedCredentials', JSON.stringify({
           username,
-          // Note: Never store passwords in plain text
         }));
       } else {
         await AsyncStorage.removeItem('rememberedCredentials');
       }
       
-      console.log('✅ Login successful:', response.user.fullName);
+      console.log('✅ Login successful for:', response.user.fullName);
+      console.log('✅ User status:', response.user.status);
       
-      // Navigate without alert to avoid double alerts
+      // Navigate to home
       router.replace('/(tabs)/explore');
       
     } catch (error: any) {
       console.error('❌ Login error:', error);
       
-      // User-friendly error messages
       let errorMessage = 'Invalid credentials. Please try again.';
       
       if (error.message.includes('Invalid email/student ID or password')) {
         errorMessage = 'The email/student ID or password you entered is incorrect.';
       } else if (error.message.includes('User not found')) {
         errorMessage = 'No account found with this email/student ID. Please sign up.';
-      } else if (error.message.includes('Network')) {
+      } else if (error.message.includes('Network') || error.message.includes('network')) {
         errorMessage = 'Cannot connect to server. Please check your internet connection.';
-      } else if (error.message.includes('valid email')) {
-        errorMessage = error.message;
+      } else if (error.message.includes('status') || error.message.includes('pending')) {
+        errorMessage = 'Your account is pending approval. Please wait for admin approval.';
       } else {
         errorMessage = error.message || 'An unexpected error occurred. Please try again.';
       }
@@ -140,7 +130,6 @@ export default function LoginScreen() {
         { 
           text: 'Send Reset Link', 
           onPress: () => {
-            // Implement password reset logic here
             Alert.alert('Check Your Email', 'If an account exists with this email, you will receive a password reset link.');
           }
         }
@@ -157,7 +146,6 @@ export default function LoginScreen() {
         { 
           text: 'Continue as Guest', 
           onPress: () => {
-            // Set guest mode flag
             AsyncStorage.setItem('isGuest', 'true');
             router.replace('/(tabs)/explore');
           }
@@ -200,10 +188,7 @@ export default function LoginScreen() {
             autoComplete="email"
             keyboardType="email-address"
             returnKeyType="next"
-            onSubmitEditing={() => {
-              // Focus password input
-              // You'll need to use refs for this in real implementation
-            }}
+            editable={!isLoading}
           />
           
           <Text style={[styles.label, { color: colors.text }]}>PASSWORD</Text>
@@ -222,11 +207,13 @@ export default function LoginScreen() {
               autoCapitalize="none"
               autoComplete="password"
               returnKeyType="done"
+              editable={!isLoading}
               onSubmitEditing={handleLogin}
             />
             <TouchableOpacity 
               style={styles.showPasswordButton}
               onPress={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               <Text style={[styles.showPasswordText, { color: colors.primary }]}>
                 {showPassword ? 'Hide' : 'Show'}
@@ -238,6 +225,7 @@ export default function LoginScreen() {
             <TouchableOpacity 
               style={styles.rememberMeContainer}
               onPress={() => setRememberMe(!rememberMe)}
+              disabled={isLoading}
             >
               <View style={[
                 styles.checkbox,
@@ -256,6 +244,7 @@ export default function LoginScreen() {
             <TouchableOpacity 
               style={styles.forgotPasswordContainer}
               onPress={handleForgotPassword}
+              disabled={isLoading}
             >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
                 Forgot Password?
@@ -281,7 +270,7 @@ export default function LoginScreen() {
             <Text style={[styles.signupText, { color: colors.textSecondary }]}>
               Don't have an account?{' '}
               <Link href="/modal" asChild>
-                <TouchableOpacity>
+                <TouchableOpacity disabled={isLoading}>
                   <Text style={[styles.signupLink, { color: colors.primary }]}>
                     SIGN UP
                   </Text>
@@ -301,6 +290,7 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={[styles.guestButton, { borderColor: colors.border }]}
             onPress={handleGuestLogin}
+            disabled={isLoading}
           >
             <Text style={[styles.guestButtonText, { color: colors.text }]}>
               Continue as Guest
@@ -380,7 +370,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   passwordInput: {
-    paddingRight: 70, // Space for show password button
+    paddingRight: 70,
   },
   showPasswordButton: {
     position: 'absolute',
