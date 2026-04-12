@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
@@ -11,6 +12,7 @@ import {
 import { useTheme } from './contexts/ThemeContext';
 
 export default function FAQsScreen() {
+  const navigation = useNavigation();
   const { colors } = useTheme();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
