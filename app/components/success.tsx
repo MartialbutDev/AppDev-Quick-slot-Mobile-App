@@ -18,7 +18,7 @@ export default function SuccessScreen() {
   
   const orderDetails = {
     orderId: params.orderId as string,
-    totalAmount: parseFloat(params.totalAmount as string),
+    totalAmount: parseFloat(params.totalAmount as string || '0'),
     paymentMethod: params.paymentMethod as string,
     contactInfo: {
       fullName: params.fullName as string,
@@ -33,15 +33,16 @@ export default function SuccessScreen() {
   };
 
   const handleViewOrders = () => {
-    Alert.alert('Coming Soon', 'Order history feature will be available soon!');
+    // Navigate to My Orders screen
+    router.push('/orders');
   };
 
   const handleContactOwner = () => {
-    Alert.alert('Contact Owner', 'This will open your messaging app to contact the owner.');
+    Alert.alert('Contact Owner', 'You can message the owner from your order details page.');
   };
 
   const getPaymentInstructions = () => {
-    switch (orderDetails.paymentMethod.toLowerCase()) {
+    switch (orderDetails.paymentMethod?.toLowerCase()) {
       case 'gcash':
         return {
           icon: 'phone-portrait',
@@ -64,7 +65,9 @@ export default function SuccessScreen() {
             'Verify item condition before payment',
             'Get receipt from the owner',
           ],
-          nextStep: `Meetup Location: ${orderDetails.contactInfo.meetupLocation}`,
+          nextStep: orderDetails.contactInfo.meetupLocation 
+            ? `Meetup Location: ${orderDetails.contactInfo.meetupLocation}`
+            : 'The owner will contact you with meetup details.',
         };
       case 'delivery':
         return {
@@ -76,7 +79,9 @@ export default function SuccessScreen() {
             'Pay the delivery rider',
             'Keep the receipt for reference',
           ],
-          nextStep: `Delivery to: ${orderDetails.contactInfo.deliveryAddress}`,
+          nextStep: orderDetails.contactInfo.deliveryAddress
+            ? `Delivery to: ${orderDetails.contactInfo.deliveryAddress}`
+            : 'The owner will contact you for delivery arrangements.',
         };
       default:
         return {
@@ -118,12 +123,12 @@ export default function SuccessScreen() {
             </View>
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Payment Method:</Text>
-              <Text style={[styles.summaryValue, { color: colors.text }]}>{orderDetails.paymentMethod}</Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>{orderDetails.paymentMethod || 'Cash'}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Status:</Text>
               <View style={[styles.statusBadge, { backgroundColor: colors.success }]}>
-                <Text style={styles.statusText}>Confirmed</Text>
+                <Text style={styles.statusText}>Pending Confirmation</Text>
               </View>
             </View>
           </View>
@@ -238,7 +243,6 @@ export default function SuccessScreen() {
     </SafeAreaView>
   );
 }
-//styles
 
 const styles = StyleSheet.create({
   container: {

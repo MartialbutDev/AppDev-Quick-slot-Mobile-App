@@ -55,19 +55,16 @@ export default function TabLayout() {
     const initializeAuth = async () => {
       if (!mounted) return;
       
-      // Initial auth check
       const isAuth = await checkAuth();
       
       if (!isAuth && mounted) {
         console.log('🚪 User not authenticated, redirecting to login...');
-        // Clear any stale data
         await AsyncStorage.multiRemove(['currentUser', 'authToken']);
       }
     };
 
     initializeAuth();
 
-    // Listen for app state changes (when app comes to foreground)
     const subscription = AppState.addEventListener('change', async (nextAppState) => {
       if (nextAppState === 'active' && mounted) {
         console.log('🔄 App became active, checking auth...');
@@ -88,7 +85,6 @@ export default function TabLayout() {
         console.log('🚪 Logout detected, clearing auth...');
         await AsyncStorage.multiRemove(['currentUser', 'authToken']);
         setIsAuthenticated(false);
-        // Remove logout param to prevent infinite loop
         router.setParams({ logout: undefined as any });
       }
     };
@@ -117,32 +113,17 @@ export default function TabLayout() {
     return (
       <Tabs
         screenOptions={{
-          tabBarStyle: {
-            display: 'none',
-          },
+          tabBarStyle: { display: 'none' },
           headerShown: false,
           animation: 'none',
         }}
       >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Login',
-            headerLeft: () => null,
-          }}
-        />
-        {/* Hide all other screens when not authenticated */}
-        <Tabs.Screen name="explore" options={{ href: null }} />
-        <Tabs.Screen name="search" options={{ href: null }} />
-        <Tabs.Screen name="rent-out" options={{ href: null }} />
-        <Tabs.Screen name="history" options={{ href: null }} />
-        <Tabs.Screen name="profile" options={{ href: null }} />
-        {/* REMOVE messages and settings from here - they're not needed in unauthenticated state */}
+        <Tabs.Screen name="index" options={{ title: 'Login' }} />
       </Tabs>
     );
   }
 
-  // Show full tab bar when authenticated - ONLY 5 TABS
+  // Show full tab bar when authenticated
   console.log('✅ User authenticated, showing tabs');
   return (
     <Tabs
@@ -157,29 +138,18 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           shadowColor: colors.shadow,
-          shadowOffset: {
-            width: 0,
-            height: -2,
-          },
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
           elevation: 8,
         },
         headerShown: false,
         animation: 'shift',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '500' },
       }}
     >
-      {/* Hide index tab */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
+      {/* Hide index tab (login screen) */}
+      <Tabs.Screen name="index" options={{ href: null }} />
       
       {/* TAB 1: HOME */}
       <Tabs.Screen
@@ -187,11 +157,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons 
-              name={focused ? "home" : "home-outline"} 
-              size={size} 
-              color={color} 
-            />
+            <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -202,11 +168,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons 
-              name={focused ? "search" : "search-outline"} 
-              size={size} 
-              color={color} 
-            />
+            <Ionicons name={focused ? "search" : "search-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -237,11 +199,7 @@ export default function TabLayout() {
         options={{
           title: 'History',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons 
-              name={focused ? "time" : "time-outline"} 
-              size={size} 
-              color={color} 
-            />
+            <Ionicons name={focused ? "time" : "time-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -252,28 +210,8 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons 
-              name={focused ? "person" : "person-outline"} 
-              size={size} 
-              color={color} 
-            />
+            <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />
           ),
-        }}
-      />
-      
-      {/* MESSAGES - NOT in tab bar, but accessible via navigation */}
-      <Tabs.Screen
-        name="messages"
-        options={{
-          href: null,  // This hides it from tab bar
-        }}
-      />
-      
-      {/* SETTINGS - NOT in tab bar, but accessible via navigation */}
-      <Tabs.Screen
-        name="settings"
-        options={{
-          href: null,  // This hides it from tab bar
         }}
       />
     </Tabs>
@@ -296,9 +234,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  iconContainerActive: {
-    // You can add active state styling here
-  },
   rentButton: {
     width: 56,
     height: 56,
@@ -307,14 +242,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: -20,
     shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-    transitionProperty: 'transform',
-    transitionDuration: '200ms',
   },
 });

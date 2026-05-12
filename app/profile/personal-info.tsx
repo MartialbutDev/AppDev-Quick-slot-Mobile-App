@@ -84,7 +84,7 @@ export default function PersonalInfoScreen() {
 
       console.log('Updating profile with:', updateData);
 
-      // ACTUALLY call the backend API
+      // Call the backend API
       const response = await apiClient.updateUserProfile(updateData);
 
       // Update local storage with new data
@@ -114,7 +114,18 @@ export default function PersonalInfoScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <Text style={[styles.title, { color: colors.text }]}>Personal Information</Text>
+      {/* Header with Cancel and Save */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: colors.primary }]}>Cancel</Text>
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Personal Information</Text>
+        <TouchableOpacity onPress={handleSave} disabled={!hasChanges() || isLoading}>
+          <Text style={[styles.saveText, { color: colors.primary, opacity: (!hasChanges() || isLoading) ? 0.5 : 1 }]}>
+            {isLoading ? 'Saving...' : 'Save'}
+          </Text>
+        </TouchableOpacity>
+      </View>
       
       <View style={styles.form}>
         <View style={styles.inputGroup}>
@@ -147,6 +158,9 @@ export default function PersonalInfoScreen() {
             placeholderTextColor={colors.placeholder}
             editable={!isLoading}
           />
+          <Text style={[styles.hintText, { color: colors.textSecondary }]}>
+            Your student ID cannot be changed. Contact admin for corrections.
+          </Text>
         </View>
 
         <View style={styles.inputGroup}>
@@ -185,21 +199,17 @@ export default function PersonalInfoScreen() {
         </View>
 
         <TouchableOpacity 
-          style={[styles.saveButton, (!hasChanges() || isLoading) && styles.saveButtonDisabled, { backgroundColor: colors.primary }]} 
-          onPress={handleSave}
-          disabled={!hasChanges() || isLoading}
-        >
-          <Text style={styles.saveButtonText}>
-            {isLoading ? 'Saving...' : 'Save Changes'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
           style={[styles.changePasswordButton, { borderColor: colors.primary }]}
           onPress={handleChangePassword}
         >
           <Text style={[styles.changePasswordText, { color: colors.primary }]}>Change Password</Text>
         </TouchableOpacity>
+
+        <View style={styles.infoBox}>
+          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+            Your personal information is used for rental verification and communication.
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -208,22 +218,39 @@ export default function PersonalInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
-  title: {
-    fontSize: 24,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    padding: 4,
+  },
+  backText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
+  },
+  saveText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   form: {
+    padding: 20,
     gap: 20,
   },
   inputGroup: {
     gap: 8,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   input: {
@@ -232,19 +259,9 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
-  saveButton: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  hintText: {
+    fontSize: 11,
+    marginTop: 4,
   },
   changePasswordButton: {
     padding: 16,
@@ -256,5 +273,16 @@ const styles = StyleSheet.create({
   changePasswordText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  infoBox: {
+    backgroundColor: '#f0f8ff',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  infoText: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

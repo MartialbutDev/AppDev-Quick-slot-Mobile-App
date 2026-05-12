@@ -90,7 +90,7 @@ export default function SignupModal() {
     try {
       console.log('🎯 Signup attempt for:', formData.email);
       
-      // Call the centralized API client (token is saved inside apiClient.signup)
+      // Call the centralized API client
       const response = await apiClient.signup({
         fullName: formData.fullName.trim(),
         studentId: formData.studentId.trim(),
@@ -100,15 +100,25 @@ export default function SignupModal() {
 
       console.log('✅ Signup successful');
       
-      // Show success message with options
+      // Clear form
+      setFormData({
+        fullName: '',
+        studentId: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+      });
+      
+      // Show success message with admin approval info - Redirect to LOGIN
       Alert.alert(
-        'Welcome to QuickSlot!', 
-        `Account created successfully! Welcome, ${formData.fullName}!`,
+        'Registration Successful!', 
+        `Welcome, ${formData.fullName}!\n\nYour account has been created and is pending admin approval.\n\nYou will receive a notification once your account is activated. You can then login to start renting gadgets.`,
         [
           {
-            text: 'Get Started',
+            text: 'Go to Login',
             onPress: () => {
-              router.replace('/(tabs)/explore');
+              // Navigate back to login screen
+              router.replace('/');
             }
           }
         ]

@@ -33,14 +33,14 @@ interface Order {
   totalAmount: number;
   paymentMethod: string;
   status: string;
-  contactInfo: {
+  contactInfo?: {
     fullName: string;
     phoneNumber: string;
     email: string;
     meetupLocation?: string;
     deliveryAddress?: string;
   };
-  specialInstructions: string;
+  specialInstructions?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,8 +54,17 @@ export default function OrderDetailScreen() {
 
   const loadOrderDetails = async () => {
     try {
-      const response = await apiClient.getOrderById(parseInt(orderId));
-      setOrder(response.order);
+      setLoading(true);
+      // Get all orders and find the specific one
+      const response = await apiClient.getMyOrders();
+      const orders = response.orders || [];
+      const foundOrder = orders.find((o: any) => o.id === parseInt(orderId));
+      
+      if (foundOrder) {
+        setOrder(foundOrder);
+      } else {
+        Alert.alert('Error', 'Order not found');
+      }
     } catch (error: any) {
       console.error('Error loading order details:', error);
       Alert.alert('Error', 'Failed to load order details');
@@ -94,7 +103,19 @@ export default function OrderDetailScreen() {
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Pending';
+      case 'confirmed': return 'Confirmed';
+      case 'in_progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return status;
+    }
+  };
+
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -104,18 +125,31 @@ export default function OrderDetailScreen() {
     });
   };
 
+  const getItemImage = (itemName: string) => {
+    const name = itemName.toLowerCase();
+    if (name.includes('macbook') || name.includes('laptop')) {
+      return require('../../assets/images/laptop.png');
+    } else if (name.includes('ipad') || name.includes('tablet')) {
+      return require('../../assets/images/Ipad.png');
+    } else if (name.includes('camera')) {
+      return require('../../assets/images/Canon.png');
+    } else if (name.includes('iphone') || name.includes('phone')) {
+      return require('../../assets/images/Iphone.png');
+    } else if (name.includes('projector')) {
+      return require('../../assets/images/Stream.png');
+    } else if (name.includes('calculator')) {
+      return require('../../assets/images/Scical.png');
+    } else {
+      return require('../../assets/images/Quickslot.png');
+    }
+  };
+
   const handleContactOwner = () => {
-    Alert.alert('Contact Owner', 'This will open your messaging app.');
+    Alert.alert('Contact Owner', 'You can message the owner through the messages tab.');
   };
 
   const handleUpdateStatus = async (newStatus: string) => {
-    try {
-      await apiClient.updateOrderStatus(parseInt(orderId), newStatus);
-      Alert.alert('Success', `Order status updated to ${newStatus}`);
-      loadOrderDetails(); // Reload Order details
-    } catch (error: any) {
-      Alert.alert('Error', 'Failed to update order status');
-    }
+    Alert.alert('Update Status', `Update order status to ${newStatus}?`);
   };
 
   if (loading) {
@@ -180,44 +214,11 @@ export default function OrderDetailScreen() {
           <View style={styles.statusContainer}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) }]}>
               <Ionicons name={getStatusIcon(order.status) as any} size={20} color="#fff" />
-              <Text style={styles.statusText}>{order.status.replace('_', ' ')}</Text>
+              <Text style={styles.statusText}>{getStatusText(order.status)}</Text>
             </View>
             <Text style={[styles.orderNumber, { color: colors.text }]}>Order #{order.orderNumber}</Text>
           </View>
           <Text style={[styles.orderDate, { color: colors.textSecondary }]}>Placed on {formatDate(order.createdAt)}</Text>
-        </View>
-
-        {/* Contact Information */}
-        <View style={[styles.section, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Contact Information</Text>
-          <View style={[styles.infoCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Full Name</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>{order.contactInfo.fullName}</Text>
-            
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Phone Number</Text>
-            <Text style={[styles.infoValue, { color: colors.text }]}>{order.contactInfo.phoneNumber}</Text>
-            
-            {order.contactInfo.email && (
-              <>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Email</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{order.contactInfo.email}</Text>
-              </>
-            )}
-            
-            {order.contactInfo.meetupLocation && (
-              <>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Meetup Location</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{order.contactInfo.meetupLocation}</Text>
-              </>
-            )}
-            
-            {order.contactInfo.deliveryAddress && (
-              <>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Delivery Address</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{order.contactInfo.deliveryAddress}</Text>
-              </>
-            )}
-          </View>
         </View>
 
         {/* Order Items */}
@@ -226,17 +227,32 @@ export default function OrderDetailScreen() {
           <View style={styles.itemsContainer}>
             {order.items.map((item, index) => (
               <View key={index} style={[styles.orderItem, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-                <Image source={item.image} style={styles.itemImage} />
+                <Image source={getItemImage(item.name)} style={styles.itemImage} />
                 <View style={styles.itemDetails}>
                   <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
-                  <Text style={[styles.itemOwner, { color: colors.textSecondary }]}>Owner: {item.owner}</Text>
+                  <Text style={[styles.itemOwner, { color: colors.textSecondary }]}>Owner: {item.owner || 'QuickSlot Partner'}</Text>
                   <Text style={[styles.itemInfo, { color: colors.textSecondary }]}>
-                    {item.quantity}x • {item.rentalDuration}
+                    {item.quantity}x • {item.rentalDuration || 'Daily'}
                   </Text>
                 </View>
-                <Text style={[styles.itemPrice, { color: colors.primary }]}>₱{item.totalPrice.toFixed(2)}</Text>
+                <Text style={[styles.itemPrice, { color: colors.primary }]}>₱{(item.totalPrice || 0).toFixed(2)}</Text>
               </View>
             ))}
+          </View>
+        </View>
+
+        {/* Order Summary */}
+        <View style={[styles.section, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
+          <View style={[styles.summaryCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Payment Method</Text>
+              <Text style={[styles.summaryValue, { color: colors.text }]}>{order.paymentMethod || 'Cash'}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Total Amount</Text>
+              <Text style={[styles.totalAmount, { color: colors.primary }]}>₱{(order.totalAmount || 0).toFixed(2)}</Text>
+            </View>
           </View>
         </View>
 
@@ -246,48 +262,6 @@ export default function OrderDetailScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Special Instructions</Text>
             <View style={[styles.infoCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
               <Text style={[styles.instructionsText, { color: colors.text }]}>{order.specialInstructions}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Order Summary */}
-        <View style={[styles.section, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
-          <View style={[styles.summaryCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-            <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Payment Method</Text>
-              <Text style={[styles.summaryValue, { color: colors.text }]}>{order.paymentMethod}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Total Amount</Text>
-              <Text style={[styles.totalAmount, { color: colors.primary }]}>₱{order.totalAmount.toFixed(2)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Action Buttons (for testing) */}
-        {__DEV__ && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Development Actions</Text>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity 
-                style={[styles.actionButton, { backgroundColor: colors.primary }]}
-                onPress={() => handleUpdateStatus('confirmed')}
-              >
-                <Text style={styles.actionButtonText}>Mark as Confirmed</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.actionButton, { backgroundColor: colors.success }]}
-                onPress={() => handleUpdateStatus('completed')}
-              >
-                <Text style={styles.actionButtonText}>Mark as Completed</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.actionButton, { backgroundColor: colors.error }]}
-                onPress={() => handleUpdateStatus('cancelled')}
-              >
-                <Text style={styles.actionButtonText}>Cancel Order</Text>
-              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -391,23 +365,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  infoCard: {
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  infoLabel: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  instructionsText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
   itemsContainer: {
     gap: 12,
   },
@@ -466,18 +423,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  actionButtons: {
-    gap: 8,
-  },
-  actionButton: {
-    padding: 12,
+  infoCard: {
+    padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    borderWidth: 1,
   },
-  actionButtonText: {
-    color: '#fff',
+  instructionsText: {
     fontSize: 14,
-    fontWeight: '600',
+    lineHeight: 20,
   },
   footer: {
     padding: 20,

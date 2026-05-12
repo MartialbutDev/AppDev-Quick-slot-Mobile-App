@@ -7,26 +7,28 @@ import { useTheme } from '../contexts/ThemeContext';
 export default function SearchScreen() {
   const { colors } = useTheme();
 
+  const handleStartSearching = () => {
+    router.push('../components/search');
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { 
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 
       }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Search</Text>
-        <View style={styles.headerRight} />
       </View>
       <View style={styles.content}>
         <Ionicons name="search-outline" size={80} color={colors.textSecondary} />
         <Text style={[styles.emptyText, { color: colors.text }]}>Search Gadgets</Text>
-        <Text style={[styles.subText, { color: colors.textSecondary }]}>Find laptops, phones, cameras and more</Text>
+        <Text style={[styles.subText, { color: colors.textSecondary }]}>
+          Find laptops, phones, cameras, tablets and more
+        </Text>
         
         <TouchableOpacity 
           style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => router.push('../components/search')}
+          onPress={handleStartSearching}
         >
           <Text style={styles.buttonText}>Start Searching</Text>
         </TouchableOpacity>
@@ -34,7 +36,6 @@ export default function SearchScreen() {
     </SafeAreaView>
   );
 }
-//styles
 
 const styles = StyleSheet.create({
   container: {
@@ -43,20 +44,14 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  backButton: {
-    padding: 4,
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  headerRight: {
-    width: 32,
   },
   content: {
     flex: 1,
@@ -74,6 +69,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 32,
+    lineHeight: 24,
   },
   button: {
     paddingHorizontal: 32,

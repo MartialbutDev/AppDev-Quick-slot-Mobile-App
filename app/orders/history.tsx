@@ -44,10 +44,44 @@ export default function OrderHistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
 
+  // Helper function to get image based on item name
+  const getItemImage = (itemName: string) => {
+    const name = itemName.toLowerCase();
+    if (name.includes('macbook') || name.includes('laptop') || name.includes('acer') || name.includes('lenovo') || name.includes('dell')) {
+      return require('../../assets/images/laptop.png');
+    } else if (name.includes('ipad') || name.includes('tablet') || name.includes('samsung tab')) {
+      return require('../../assets/images/Ipad.png');
+    } else if (name.includes('camera') || name.includes('canon') || name.includes('sony')) {
+      return require('../../assets/images/Canon.png');
+    } else if (name.includes('iphone') || name.includes('phone') || name.includes('samsung galaxy')) {
+      return require('../../assets/images/Iphone.png');
+    } else if (name.includes('projector') || name.includes('epson')) {
+      return require('../../assets/images/Stream.png');
+    } else if (name.includes('calculator') || name.includes('casio')) {
+      return require('../../assets/images/Scical.png');
+    } else {
+      return require('../../assets/images/Quickslot.png');
+    }
+  };
+
   const loadOrders = async () => {
     try {
+      setLoading(true);
       const response = await apiClient.getOrderHistory();
-      setOrders(response.orders);
+      // Ensure orders have proper structure with fallbacks
+      const formattedOrders = (response.orders || []).map((order: any) => ({
+        ...order,
+        totalAmount: parseFloat(order.totalAmount) || 0,
+        items: (order.items || []).map((item: any) => ({
+          ...item,
+          totalPrice: parseFloat(item.totalPrice) || 0,
+          quantity: item.quantity || 1,
+          rentalDuration: item.rentalDuration || 'days',
+          owner: item.owner || 'QuickSlot Partner',
+          image: getItemImage(item.name),
+        })),
+      }));
+      setOrders(formattedOrders);
     } catch (error: any) {
       console.error('Error loading order history:', error);
       Alert.alert('Error', 'Failed to load order history');
@@ -82,7 +116,16 @@ export default function OrderHistoryScreen() {
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return status;
+    }
+  };
+
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -109,7 +152,7 @@ export default function OrderHistoryScreen() {
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Ionicons name={getStatusIcon(item.status) as any} size={14} color="#fff" />
-          <Text style={styles.statusText}>{item.status}</Text>
+          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
         </View>
       </View>
 
@@ -123,6 +166,9 @@ export default function OrderHistoryScreen() {
                 {orderItem.quantity}x • {orderItem.rentalDuration}
               </Text>
             </View>
+            <Text style={[styles.itemPrice, { color: colors.primary }]}>
+              ₱{(orderItem.totalPrice || 0).toFixed(2)}
+            </Text>
           </View>
         ))}
         {item.items.length > 2 && (
@@ -131,8 +177,8 @@ export default function OrderHistoryScreen() {
       </View>
 
       <View style={[styles.orderFooter, { borderTopColor: colors.border }]}>
-        <Text style={[styles.paymentMethod, { color: colors.textSecondary }]}>{item.paymentMethod}</Text>
-        <Text style={[styles.totalAmount, { color: colors.primary }]}>₱{item.totalAmount.toFixed(2)}</Text>
+        <Text style={[styles.paymentMethod, { color: colors.textSecondary }]}>{item.paymentMethod || 'Cash'}</Text>
+        <Text style={[styles.totalAmount, { color: colors.primary }]}>₱{(item.totalAmount || 0).toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -168,7 +214,9 @@ export default function OrderHistoryScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Order History</Text>
-        <View style={styles.headerRight} />
+        <TouchableOpacity onPress={loadOrders} style={styles.refreshButton}>
+          <Ionicons name="refresh-outline" size={22} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       {orders.length === 0 ? (
@@ -178,6 +226,12 @@ export default function OrderHistoryScreen() {
           <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
             Your completed and cancelled orders will appear here
           </Text>
+          <TouchableOpacity 
+            style={[styles.browseButton, { backgroundColor: colors.primary }]}
+            onPress={() => router.push('/(tabs)/explore')}
+          >
+            <Text style={styles.browseButtonText}>Browse Products</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -194,7 +248,7 @@ export default function OrderHistoryScreen() {
     </SafeAreaView>
   );
 }
-//styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -216,6 +270,9 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 32,
+  },
+  refreshButton: {
+    padding: 4,
   },
   loadingContainer: {
     flex: 1,
@@ -241,6 +298,17 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: 32,
+  },
+  browseButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 8,
+  },
+  browseButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   listContent: {
     padding: 16,
@@ -307,6 +375,10 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     fontSize: 12,
+  },
+  itemPrice: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   moreItems: {
     fontSize: 12,

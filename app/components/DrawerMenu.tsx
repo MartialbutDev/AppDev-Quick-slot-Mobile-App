@@ -60,20 +60,28 @@ export default function DrawerMenu({
         { icon: 'time-outline', label: 'Order History', route: '/orders/history' },
         { 
           icon: 'heart-outline', 
-          label: 'Favourite', 
+          label: 'Favourites', 
           route: '/orders/favourites',
           badge: favoritesCount > 0 ? favoritesCount.toString() : undefined
         },
         { icon: 'chatbubble-outline', label: 'Messages', route: '/messages' },
-        { icon: 'card-outline', label: 'Payment Method', route: '/payment' },
+        { icon: 'card-outline', label: 'Payment Methods', route: '/payment-methods' },
       ]
     },
     {
       title: 'SUPPORT',
       items: [
         { icon: 'help-circle-outline', label: 'FAQs', route: '/faqs' },
-        { icon: 'star-outline', label: 'User Reviews', route: '/reviews' },
+        { icon: 'star-outline', label: 'Reviews', route: '/reviews' },
         { icon: 'settings-outline', label: 'Settings', route: '/settings' },
+      ]
+    },
+    // ============ NEW LEGAL SECTION ============
+    {
+      title: 'LEGAL',
+      items: [
+        { icon: 'document-text-outline', label: 'Terms & Conditions', route: '/terms' },
+        { icon: 'shield-outline', label: 'Privacy Policy', route: '/privacy' },
       ]
     },
   ];
@@ -95,40 +103,41 @@ export default function DrawerMenu({
     }
   };
 
-const handleLogout = async () => {
-  Alert.alert(
-    'Logout',
-    'Are you sure you want to logout?',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Logout', 
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            onClose();
-            
-            // Clear all authentication data
-            await AsyncStorage.multiRemove([
-              'currentUser', 
-              'authToken',
-              'cartItems' // Optional: clear cart on logout
-            ]);
-            
-            console.log('🚪 User logged out successfully');
-            
-            // Navigate to login screen
-            router.replace('/');
-            
-          } catch (error) {
-            console.error('❌ Logout error:', error);
-            router.replace('/');
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              onClose();
+              
+              // Clear all authentication data
+              await AsyncStorage.multiRemove([
+                'currentUser', 
+                'authToken',
+                'cartItems',
+                'profileImage'
+              ]);
+              
+              console.log('🚪 User logged out successfully');
+              
+              // Navigate to login screen
+              router.replace('/');
+              
+            } catch (error) {
+              console.error('❌ Logout error:', error);
+              router.replace('/');
+            }
           }
         }
-      }
-    ]
-  );
-};
+      ]
+    );
+  };
 
   const handleMenuItemPress = (route: string, label: string) => {
     onClose();
@@ -136,9 +145,11 @@ const handleLogout = async () => {
     
     // Use setTimeout to ensure drawer closes before navigation
     setTimeout(() => {
-      if (route) {
-        // Always use push to maintain navigation stack for back button functionality
+      try {
         router.push(route as any);
+      } catch (error) {
+        console.error(`Navigation error to ${route}:`, error);
+        Alert.alert('Coming Soon', `${label} feature will be available soon!`);
       }
     }, 100);
   };
@@ -167,26 +178,26 @@ const handleLogout = async () => {
   };
 
   const pickImage = async () => {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') {
-    Alert.alert('Permission needed', 'Please grant permission to access your photos');
-    return;
-  }
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant permission to access your photos');
+      return;
+    }
 
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.8,
-  });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
 
-  if (!result.canceled) {
-    const imageUri = result.assets[0].uri;
-    setProfileImage(imageUri);
-    await AsyncStorage.setItem('profileImage', imageUri);
-    Alert.alert('Success', 'Profile picture updated!');
-  }
-};
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      await AsyncStorage.setItem('profileImage', imageUri);
+      Alert.alert('Success', 'Profile picture updated!');
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
@@ -195,33 +206,33 @@ const handleLogout = async () => {
         backgroundColor: colors.surface,
         borderBottomColor: colors.border
       }]}>
-    <View style={styles.userInfoSection}>
-      <View style={styles.profileImageContainer}>
-        <TouchableOpacity onPress={pickImage}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.userImage} />
-          ) : (
-            <View style={[styles.userImagePlaceholder, { backgroundColor: colors.primary }]}>
-              <Text style={styles.userImageInitials}>
-                {currentUser?.fullName?.charAt(0) || 'U'}
-              </Text>
+        <View style={styles.userInfoSection}>
+          <View style={styles.profileImageContainer}>
+            <TouchableOpacity onPress={pickImage}>
+              {profileImage ? (
+                <Image source={{ uri: profileImage }} style={styles.userImage} />
+              ) : (
+                <View style={[styles.userImagePlaceholder, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.userImageInitials}>
+                    {currentUser?.fullName?.charAt(0) || currentUser?.username?.charAt(0) || 'U'}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            <View style={styles.cameraIcon}>
+              <Ionicons name="camera" size={14} color="#fff" />
             </View>
-          )}
-        </TouchableOpacity>
-        <View style={styles.cameraIcon}>
-          <Ionicons name="camera" size={14} color="#fff" />
+          </View>
+          <View style={styles.userTextInfo}>
+            <Text style={[styles.userName, { color: colors.text }]}>
+              {currentUser?.fullName || currentUser?.username || 'User'}
+            </Text>
+            <Text style={[styles.userBio, { color: colors.textSecondary }]}>
+              {currentUser?.studentId ? `ID: ${currentUser.studentId}` : 'Ready to rent some gadgets?'}
+            </Text>
+          </View>
         </View>
       </View>
-      <View style={styles.userTextInfo}>
-        <Text style={[styles.userName, { color: colors.text }]}>
-          {currentUser?.fullName || 'Name Surname'}
-        </Text>
-        <Text style={[styles.userBio, { color: colors.textSecondary }]}>
-          Ready to rent some gadgets?
-        </Text>
-      </View>
-    </View>
-  </View>
 
       <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
         {/* Menu Sections */}
@@ -306,7 +317,7 @@ const handleLogout = async () => {
       </View>
     </View>
   );
- }
+}
 
 const styles = StyleSheet.create({
   container: {

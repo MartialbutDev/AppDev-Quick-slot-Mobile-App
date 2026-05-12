@@ -46,7 +46,53 @@ export default function CheckoutScreen() {
     }
   };
 
+  // Helper function to check if an item is a laptop/PC based on name
+  const isLaptopOrPc = (itemName: string): boolean => {
+    const laptopKeywords = ['laptop', 'pc', 'gaming', 'macbook', 'thinkpad', 'dell', 'asus', 'acer', 'lenovo'];
+    const lowerName = itemName.toLowerCase();
+    return laptopKeywords.some(keyword => lowerName.includes(keyword));
+  };
+
+  // ============ Check rental limits before placing order ============
+  const checkRentalLimits = async (): Promise<boolean> => {
+    try {
+      const response = await apiClient.request('/user/rental-status/');
+      console.log('📊 Rental limit check response:', response);
+      
+      // Check if user already has a laptop/PC rental and trying to rent another
+      const hasLaptopInCart = cartItems.some(item => 
+        isLaptopOrPc(item.name)
+      );
+      
+      if (hasLaptopInCart && !response.can_rent_laptop) {
+        Alert.alert(
+          'Rental Limit Reached',
+          'You can only rent ONE laptop/PC at a time. Please return your current laptop before renting another.',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+        return false;
+      }
+      
+      // Check total rental limit
+      if (!response.can_rent_more) {
+        Alert.alert(
+          'Rental Limit Reached',
+          `You have reached the maximum limit of ${response.total_limit} active rentals. Please return some items first.`,
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking rental limits:', error);
+      // Allow on error (network issue, etc.)
+      return true;
+    }
+  };
+
   const handlePlaceOrder = async () => {
+    // Validate contact info
     if (!contactInfo.fullName || !contactInfo.phoneNumber) {
       Alert.alert('Missing Information', 'Please fill in your full name and phone number.');
       return;
@@ -59,6 +105,12 @@ export default function CheckoutScreen() {
 
     if (selectedPayment === 'delivery' && !contactInfo.deliveryAddress) {
       Alert.alert('Missing Information', 'Please provide a delivery address.');
+      return;
+    }
+
+    // ============ Check rental limits before proceeding ============
+    const limitsOk = await checkRentalLimits();
+    if (!limitsOk) {
       return;
     }
 
@@ -78,16 +130,19 @@ export default function CheckoutScreen() {
 
       console.log('🛒 Order data:', orderData);
 
-      // ✅ UPDATED: Use the dedicated createOrder method instead of generic request
+      // Call the dedicated createOrder method
       const response = await apiClient.createOrder(orderData);
 
-      console.log('✅ Order created:', response.order.orderNumber);
+      console.log('✅ Order created response:', response);
+
+      // Get order ID from response (Django returns the rental object directly)
+      const orderId = response.id || response.order?.id || `QS${Date.now()}`;
 
       // Navigate to success page with order details
       router.push({
         pathname: '../components/success',
         params: {
-          orderId: response.order.orderNumber,
+          orderId: orderId.toString(),
           totalAmount: getTotalPrice().toFixed(2),
           paymentMethod: selectedPayment,
           fullName: contactInfo.fullName,
@@ -102,7 +157,14 @@ export default function CheckoutScreen() {
       
     } catch (error: any) {
       console.error('❌ Order creation failed:', error);
-      Alert.alert('Order Failed', error.message || 'Failed to create order. Please try again.');
+      
+      // Check if error is from rental limits (backend)
+      if (error.message?.includes('can only rent ONE laptop') || 
+          error.message?.includes('maximum limit')) {
+        Alert.alert('Rental Limit Reached', error.message);
+      } else {
+        Alert.alert('Order Failed', error.message || 'Failed to create order. Please try again.');
+      }
       setIsProcessing(false);
     }
   };

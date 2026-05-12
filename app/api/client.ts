@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Django Backend URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.1.62:8000/api'
+  ? 'http://172.20.10.10:8000/api'
   : 'https://your-production-url.com/api';
 
 export const apiClient = { 
@@ -120,26 +120,9 @@ export const apiClient = {
         body: JSON.stringify(requestBody),
       });
       
-      const authToken = response.access || response.token;
-      
-      if (authToken && response.user) {
-        const transformedUser = {
-          id: response.user.id,
-          fullName: `${response.user.first_name} ${response.user.last_name}`.trim(),
-          studentId: response.user.student_id,
-          email: response.user.email,
-          phone: response.user.phone || '',
-          userType: response.user.user_type,
-          status: response.user.status,
-          token: authToken
-        };
-        
-        await AsyncStorage.setItem('currentUser', JSON.stringify(transformedUser));
-        await AsyncStorage.setItem('authToken', authToken);
-        console.log('✅ Signup successful');
-      }
-      
+      console.log('✅ Signup successful, waiting for admin approval');
       return response;
+      
     } catch (error: any) {
       console.error('❌ Signup failed:', error);
       throw error;
@@ -152,18 +135,13 @@ export const apiClient = {
       let requestBody;
       const input = credentials.username.trim();
       
-      // Check if input is an email
       if (input.includes('@')) {
         requestBody = { email: input, password: credentials.password };
         console.log('📦 Using email login');
-      } 
-      // Check if input is a student ID (numeric)
-      else if (/^\d+$/.test(input)) {
+      } else if (/^\d+$/.test(input)) {
         requestBody = { username: input, password: credentials.password };
         console.log('📦 Using student ID login');
-      } 
-      // Otherwise treat as username
-      else {
+      } else {
         requestBody = { username: input, password: credentials.password };
         console.log('📦 Using username login');
       }
@@ -192,6 +170,8 @@ export const apiClient = {
         await AsyncStorage.setItem('currentUser', JSON.stringify(transformedUser));
         await AsyncStorage.setItem('authToken', authToken);
         console.log('✅ Login successful for:', transformedUser.fullName);
+        
+        await AsyncStorage.removeItem('isGuest');
         
         return { user: transformedUser, token: authToken };
       } else {
@@ -314,15 +294,19 @@ export const apiClient = {
             id: order.gadget,
             name: order.gadget_name,
             quantity: 1,
-            totalPrice: order.total_amount,
+            totalPrice: parseFloat(order.total_amount) || 0,
+            owner: order.gadget?.brand || 'QuickSlot Partner',
+            rentalDuration: 'days',
           }],
-          totalAmount: order.total_amount,
+          totalAmount: parseFloat(order.total_amount) || 0,
           status: order.status,
+          paymentMethod: 'cash',
           createdAt: order.created_at
         })),
         total: orders.length,
       };
     } catch (error) {
+      console.error('Error in getMyOrders:', error);
       return { orders: [], total: 0 };
     }
   },
@@ -339,9 +323,9 @@ export const apiClient = {
             id: order.gadget,
             name: order.gadget_name,
             quantity: 1,
-            totalPrice: order.total_amount,
+            totalPrice: parseFloat(order.total_amount) || 0,
           }],
-          totalAmount: order.total_amount,
+          totalAmount: parseFloat(order.total_amount) || 0,
           status: order.status,
           createdAt: order.created_at
         })),
@@ -353,15 +337,21 @@ export const apiClient = {
   },
 
   async createOrder(orderData: any) {
+    if (!orderData.items || !orderData.items[0] || !orderData.items[0].id) {
+      throw new Error('Invalid order data: Missing gadget information');
+    }
+    
+    const expectedReturn = new Date();
+    expectedReturn.setDate(expectedReturn.getDate() + 7);
+    
     const rentalData = {
       gadget: parseInt(orderData.items[0].id),
       rent_date: new Date().toISOString().split('T')[0],
-      expected_return: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0],
-      total_amount: orderData.totalAmount,
-      payment_method: orderData.paymentMethod,
-      contact_info: orderData.contactInfo,
-      special_instructions: orderData.specialInstructions || ''
+      expected_return: expectedReturn.toISOString().split('T')[0],
+      total_amount: parseFloat(orderData.totalAmount),
     };
+    
+    console.log('📦 Creating rental with data:', rentalData);
     
     return this.request('/rentals/create/', {
       method: 'POST',
@@ -370,21 +360,44 @@ export const apiClient = {
   },
 
   async getOrderById(orderId: number) {
-    return this.request(`/orders/${orderId}`);
+    try {
+      const response = await this.getMyOrders();
+      const orders = response.orders || [];
+      const order = orders.find((o: any) => o.id === orderId);
+      
+      if (!order) {
+        throw new Error('Order not found');
+      }
+      
+      return { order };
+    } catch (error) {
+      console.error('Error fetching order details:', error);
+      throw error;
+    }
   },
 
   async updateOrderStatus(orderId: number, status: string) {
-    return this.request(`/orders/${orderId}/status`, {
-      method: 'PUT',
+    return this.request(`/rentals/${orderId}/status/`, {
+      method: 'PATCH',
       body: JSON.stringify({ status }),
     });
   },
 
   // ============ GADGETS ============
-
+  // FIXED: Properly handles paginated response from Django REST Framework
   async getGadgets() {
     const response = await this.request('/gadgets/');
-    return response.results || response;
+    // Django REST Framework returns { count, next, previous, results }
+    // Extract the results array, or return empty array if not found
+    if (response && response.results && Array.isArray(response.results)) {
+      return response.results;
+    }
+    // Fallback for non-paginated response or direct array
+    if (Array.isArray(response)) {
+      return response;
+    }
+    console.warn('Unexpected gadgets response format:', response);
+    return [];
   },
 
   async getGadgetById(id: number) {
@@ -393,7 +406,94 @@ export const apiClient = {
 
   async getCategories() {
     const response = await this.request('/categories/');
-    return response.results || response;
+    // Handle paginated response for categories as well
+    if (response && response.results && Array.isArray(response.results)) {
+      return response.results;
+    }
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return [];
+  },
+
+  // ============ NOTIFICATIONS ============
+
+  async getNotifications() {
+    try {
+      const response = await this.request('/notifications/');
+      return response.results || response || [];
+    } catch (error) {
+      console.log('Error fetching notifications:', error);
+      return [];
+    }
+  },
+
+  async markNotificationAsRead(notificationId: number) {
+    try {
+      return await this.request(`/notifications/${notificationId}/`, {
+        method: 'PATCH',
+        body: JSON.stringify({ read: true }),
+      });
+    } catch (error) {
+      console.log('Error marking notification as read:', error);
+      throw error;
+    }
+  },
+
+  async sendNotification(userId: number, title: string, message: string, type: string = 'info') {
+    return this.request('/notifications/send/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        user_id: userId, 
+        title, 
+        message, 
+        type 
+      }),
+    });
+  },
+
+  async getUnreadNotificationCount() {
+    try {
+      const notifications = await this.getNotifications();
+      const unreadCount = notifications.filter((n: any) => !n.read).length;
+      return unreadCount;
+    } catch (error) {
+      console.log('Error getting unread count:', error);
+      return 0;
+    }
+  },
+
+  // ============ ML RECOMMENDATIONS ============
+
+  async getMLRecommendations() {
+    try {
+      const response = await this.request('/ml/recommendations/');
+      return response;
+    } catch (error) {
+      console.log('Error fetching ML recommendations:', error);
+      return { recommendations: [] };
+    }
+  },
+
+  async getMLPrediction(gadgetCategory: string, eventPriority: number = 10) {
+    try {
+      const response = await this.request(`/ml/predict/?category=${gadgetCategory}&priority=${eventPriority}`);
+      return response;
+    } catch (error) {
+      console.log('Error fetching ML prediction:', error);
+      return null;
+    }
+  },
+
+  async getMLBatchPredict(categories: string[]) {
+    try {
+      const categoriesStr = categories.join(',');
+      const response = await this.request(`/ml/batch-predict/?categories=${categoriesStr}`);
+      return response;
+    } catch (error) {
+      console.log('Error fetching batch predictions:', error);
+      return null;
+    }
   },
 
   // ============ HELPER METHODS ============
@@ -420,7 +520,7 @@ export const apiClient = {
 
   async logout(): Promise<void> {
     try {
-      await AsyncStorage.multiRemove(['currentUser', 'authToken', 'rememberedCredentials']);
+      await AsyncStorage.multiRemove(['currentUser', 'authToken', 'rememberedCredentials', 'isGuest']);
       console.log('✅ User logged out');
     } catch (error) {
       console.error('❌ Logout failed:', error);

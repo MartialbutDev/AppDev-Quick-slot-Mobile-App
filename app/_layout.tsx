@@ -11,10 +11,9 @@ export default function RootLayout() {
   const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
-    // Simulate app initialization
     const prepareApp = async () => {
       try {
-        // You can load fonts, check auth, load initial data here
+        // App initialization
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.warn('App initialization error:', error);
@@ -42,37 +41,21 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            // Smooth screen transitions
             animation: 'slide_from_right',
             animationDuration: 300,
-            // Prevent gesture back on some screens
             gestureEnabled: true,
-            // Custom header styling
-            headerStyle: {
-              backgroundColor: 'transparent',
-            },
-            headerShadowVisible: false,
           }}
         >
-          {/* SPLASH SCREEN - Handles initial routing */}
-          <Stack.Screen 
-            name="_splash" 
-            options={{
-              animation: 'none',
-            }}
-          />
-          
-          {/* LOGIN */}
+          {/* LOGIN - This is your index.tsx (the file you sent) */}
           <Stack.Screen 
             name="index" 
             options={{
-              // Prevent going back from login
               gestureEnabled: false,
               animation: 'fade',
             }}
           />
           
-          {/* SIGNUP */}
+          {/* SIGNUP MODAL */}
           <Stack.Screen 
             name="modal" 
             options={{ 
@@ -82,11 +65,10 @@ export default function RootLayout() {
             }}
           />
           
-          {/* MAIN APP - Protected by TabLayout's auth check */}
+          {/* MAIN TABS */}
           <Stack.Screen 
             name="(tabs)" 
             options={{
-              // Prevent going back to login from tabs
               gestureEnabled: false,
             }}
           />
@@ -113,21 +95,18 @@ export default function RootLayout() {
           
           {/* OTHER SCREENS */}
           <Stack.Screen name="notification" />
-
-          {/* Add after existing profile screens */}
           <Stack.Screen name="payment-methods" />
           <Stack.Screen name="faqs" />
           <Stack.Screen name="reviews" />
           <Stack.Screen name="settings" />
           <Stack.Screen name="messages" />
+          <Stack.Screen name="terms" />
+          <Stack.Screen name="privacy" />
           
-          {/* CATCH-ALL ROUTE FOR 404 */}
+          {/* CATCH-ALL */}
           <Stack.Screen 
             name="[...unmatched]" 
-            options={{
-              // This handles unmatched routes
-              title: 'Not Found',
-            }}
+            options={{ title: 'Not Found' }}
           />
         </Stack>
       </CartProvider>

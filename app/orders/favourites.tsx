@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -15,6 +16,15 @@ import {
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Backend API base URL for images
+const API_BASE_URL = 'http://192.168.1.63:8000';
+
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/media/')) return `${API_BASE_URL}${imagePath}`;
+  return `${API_BASE_URL}/media/${imagePath}`;
+};
 
 interface Favorite {
   id: string;
@@ -27,53 +37,45 @@ interface Favorite {
   addedAt: string;
 }
 
+// Helper to get full gadget details from API
+const fetchGadgetDetails = async (gadgetId: number) => {
+  try {
+    const gadgets = await apiClient.getGadgets();
+    const gadget = gadgets.find((g: any) => g.id === gadgetId);
+    return gadget;
+  } catch (error) {
+    console.error('Error fetching gadget details:', error);
+    return null;
+  }
+};
+
 export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { colors } = useTheme();
 
-  // Function to Map product names to local images
-  const getProductImage = (favorite: Favorite) => {
-    const imageMap: { [key: string]: any } = {
-      'acer aspire go 15': require('../../assets/images/laptop.png'),
-      'lenovo ideapad slim 3': require('../../assets/images/lenovo.png'),
-      'macbook pro m2': require('../../assets/images/Macbook.png'),
-      'dell xps 13': require('../../assets/images/Dell.png'),
-      'gaming pc rtx 4080': require('../../assets/images/RTX.png'),
-      'streaming setup pro': require('../../assets/images/Stream.png'),
-      'ipad air m1': require('../../assets/images/Ipad.png'),
-      'samsung galaxy tab s9': require('../../assets/images/Samsung.png'),
-      'canon eos r5': require('../../assets/images/Canon.png'),
-      'sony a7iv': require('../../assets/images/Sony.png'),
-      'iphone 15 pro': require('../../assets/images/Iphone.png'),
-      'samsung galaxy s24': require('../../assets/images/Samsung1.png'),
-      'wireless keyboard & mouse': require('../../assets/images/Wireless.png'),
-      'scientific calculator': require('../../assets/images/Scical.png'),
-      'sign pen ball pen': require('../../assets/images/ballpen.png'),
-    };
-    
-    const imageKey = favorite.productName.toLowerCase();
-    return imageMap[imageKey] || null;
-  };
-
   const loadFavorites = async () => {
     try {
       setLoading(true);
-      console.log('🔄 Loading favorites...');
       const response = await apiClient.getFavorites();
       console.log('✅ Favorites loaded:', response);
-      setFavorites(response.favorites || []);
+      
+      // Fetch full gadget details for each favorite to get image_url
+      const enhancedFavorites = await Promise.all(
+        (response.favorites || []).map(async (fav: any) => {
+          const gadgetDetails = await fetchGadgetDetails(parseInt(fav.productId));
+          return {
+            ...fav,
+            gadgetDetails,
+          };
+        })
+      );
+      
+      setFavorites(enhancedFavorites);
     } catch (error: any) {
       console.error('❌ Load favorites error:', error);
-      
-      // More specific error handling
-      if (error.message?.includes('Order not found')) {
-        console.error('⚠️ Wrong endpoint called - should be favorites, not orders');
-        Alert.alert('Error', 'Failed to load favorites - configuration error');
-      } else {
-        Alert.alert('Error', 'Failed to load favorites. Please try again.');
-      }
+      Alert.alert('Error', 'Failed to load favorites');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -81,11 +83,7 @@ export default function FavoritesScreen() {
   };
 
   useEffect(() => {
-    console.log('🎯 Favorites screen mounted');
     loadFavorites();
-    return () => {
-      console.log('🎯 Favorites screen unmounted');
-    };
   }, []);
 
   const onRefresh = () => {
@@ -117,25 +115,41 @@ export default function FavoritesScreen() {
     );
   };
 
-  const handleProductPress = (favorite: Favorite) => {
-    // Navigate to product detail page
-    router.push({
-      pathname: '../components/product-detail',
-      params: { 
-        product: JSON.stringify({
-          id: favorite.productId,
-          name: favorite.productName,
-          price: favorite.productPrice,
-          description: favorite.productDescription,
-          image: favorite.productImage,
-          category: favorite.category,
-        })
-      }
-    });
+  const handleProductPress = async (favorite: any) => {
+    // Fetch full gadget details to pass to product detail
+    const gadget = await fetchGadgetDetails(parseInt(favorite.productId));
+    
+    if (gadget) {
+      const product = {
+        id: gadget.id.toString(),
+        name: gadget.name,
+        price: `₱${gadget.daily_rate}/hour`,
+        rating: 4.5,
+        reviews: gadget.times_rented || 0,
+        description: gadget.description,
+        image: gadget.image_url ? { uri: getImageUrl(gadget.image_url) } : require('../../assets/images/Quickslot.png'),
+        specs: gadget.specs || ['No specifications listed'],
+        owner: gadget.brand || 'QuickSlot Partner',
+        category: gadget.category_name,
+        image_url: gadget.image_url,
+      };
+      
+      router.push({
+        pathname: '../components/product-detail',
+        params: { product: JSON.stringify(product) }
+      });
+    } else {
+      Alert.alert('Error', 'Product details not found');
+    }
   };
 
-  const renderFavoriteItem = ({ item }: { item: Favorite }) => {
-    const imageSource = getProductImage(item);
+  const renderFavoriteItem = ({ item }: { item: any }) => {
+    const gadget = item.gadchetDetails;
+    const imageSource = item.productImage 
+      ? { uri: getImageUrl(item.productImage) }
+      : (gadget?.image_url ? { uri: getImageUrl(gadget.image_url) } : null);
+    
+    const displayPrice = item.productPrice || (gadget ? `₱${gadget.daily_rate}/hour` : '₱0');
     
     return (
       <TouchableOpacity 
@@ -164,10 +178,10 @@ export default function FavoritesScreen() {
         <View style={styles.productInfo}>
           <Text style={[styles.productName, { color: colors.text }]}>{item.productName}</Text>
           <Text style={[styles.productDescription, { color: colors.textSecondary }]} numberOfLines={2}>
-            {item.productDescription}
+            {item.productDescription || (gadget?.description || 'No description')}
           </Text>
-          <Text style={[styles.productPrice, { color: colors.primary }]}>{item.productPrice}</Text>
-          <Text style={[styles.category, { color: colors.textSecondary }]}>Category: {item.category}</Text>
+          <Text style={[styles.productPrice, { color: colors.primary }]}>{displayPrice}</Text>
+          <Text style={[styles.category, { color: colors.textSecondary }]}>Category: {item.category || gadget?.category_name || 'Others'}</Text>
           <Text style={[styles.addedDate, { color: colors.textSecondary }]}>
             Added: {new Date(item.addedAt).toLocaleDateString()}
           </Text>
@@ -192,16 +206,36 @@ export default function FavoritesScreen() {
       </Text>
       <TouchableOpacity 
         style={[styles.browseButton, { backgroundColor: colors.primary }]}
-        onPress={() => router.back()}
+        onPress={() => router.push('/(tabs)/explore')}
       >
         <Text style={styles.browseButtonText}>Browse Products</Text>
       </TouchableOpacity>
     </View>
   );
 
+  if (loading && favorites.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { 
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border 
+        }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>My Favorites</Text>
+          <View style={styles.headerRight} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading favorites...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { 
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 
@@ -210,10 +244,11 @@ export default function FavoritesScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>My Favorites</Text>
-        <View style={styles.headerRight} />
+        <TouchableOpacity onPress={loadFavorites} style={styles.refreshButton}>
+          <Ionicons name="refresh-outline" size={22} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
-      {/* Favorites List */}
       <FlatList
         data={favorites}
         renderItem={renderFavoriteItem}
@@ -221,7 +256,7 @@ export default function FavoritesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
         ListEmptyComponent={!loading ? renderEmptyState : null}
         ListFooterComponent={favorites.length > 0 ? <View style={styles.footer} /> : null}
@@ -251,6 +286,18 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     width: 32,
+  },
+  refreshButton: {
+    padding: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
   },
   listContent: {
     padding: 16,

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -11,38 +12,51 @@ import {
 } from 'react-native';
 import { useTheme } from './contexts/ThemeContext';
 
+interface PaymentMethod {
+  id: string;
+  type: string;
+  icon: string;
+  description: string;
+  details: string;
+  isDefault: boolean;
+}
+
 export default function PaymentMethodsScreen() {
   const { colors } = useTheme();
-  
-  // Payment Methods available for face-to-face rental
-  const [paymentMethods, setPaymentMethods] = useState([
-    { 
-      id: '1', 
-      type: 'Cash', 
-      description: 'Pay in cash upon pickup',
-      details: 'Bring exact amount when meeting the owner',
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
+    {
+      id: '1',
+      type: 'Cash on Meetup',
+      icon: 'cash-outline',
+      description: 'Pay with cash when you meet the owner',
+      details: 'Bring exact amount when picking up the item',
       isDefault: true,
-      icon: 'cash-outline'
     },
-    { 
-      id: '2', 
-      type: 'GCash', 
-      description: 'Pay via GCash to admin',
-      details: 'Account: 09123456789 (John Doe)',
+    {
+      id: '2',
+      type: 'GCash',
+      icon: 'phone-portrait-outline',
+      description: 'Pay via GCash to the owner',
+      details: 'Account: 0912 345 6789 (John Doe)',
       isDefault: false,
-      icon: 'phone-portrait-outline'
     },
-    { 
-      id: '3', 
-      type: 'Bank Transfer', 
-      description: 'Transfer to school account',
-      details: 'BPI: 1234-5678-90 (USTP Rental Services)',
+    {
+      id: '3',
+      type: 'Bank Transfer',
+      icon: 'business-outline',
+      description: 'Transfer to the owner\'s bank account',
+      details: 'BPI: 1234-5678-90 (John Doe)',
       isDefault: false,
-      icon: 'business-outline'
+    },
+    {
+      id: '4',
+      type: 'PayMaya',
+      icon: 'card-outline',
+      description: 'Pay via PayMaya digital wallet',
+      details: 'Account: 0912 345 6789',
+      isDefault: false,
     },
   ]);
-
-  const [showPaymentInstructions, setShowPaymentInstructions] = useState(false);
 
   const setDefaultMethod = (id: string) => {
     setPaymentMethods(paymentMethods.map(method => ({
@@ -52,7 +66,7 @@ export default function PaymentMethodsScreen() {
     Alert.alert('Success', 'Default payment method updated');
   };
 
-  const showInstructions = (method: any) => {
+  const showInstructions = (method: PaymentMethod) => {
     Alert.alert(
       `How to Pay with ${method.type}`,
       `${method.description}\n\n${method.details}\n\nNote: Payment will be verified by the admin before rental confirmation.`,
@@ -60,14 +74,18 @@ export default function PaymentMethodsScreen() {
     );
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Payment Methods</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 32 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -93,13 +111,11 @@ export default function PaymentMethodsScreen() {
                   </Text>
                 </View>
               </View>
-              <View style={styles.methodActions}>
-                {method.isDefault && (
-                  <View style={[styles.defaultBadge, { backgroundColor: colors.primary + '20' }]}>
-                    <Text style={[styles.defaultText, { color: colors.primary }]}>Default</Text>
-                  </View>
-                )}
-              </View>
+              {method.isDefault && (
+                <View style={[styles.defaultBadge, { backgroundColor: colors.primary + '20' }]}>
+                  <Text style={[styles.defaultText, { color: colors.primary }]}>Default</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.methodFooter}>
@@ -112,16 +128,19 @@ export default function PaymentMethodsScreen() {
               </TouchableOpacity>
               
               {!method.isDefault && (
-                <TouchableOpacity 
-                  style={[styles.setDefaultButton]}
-                  onPress={() => setDefaultMethod(method.id)}
-                >
+                <TouchableOpacity onPress={() => setDefaultMethod(method.id)}>
                   <Text style={[styles.setDefaultText, { color: colors.primary }]}>Set as Default</Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
         ))}
+
+        {/* Add Payment Method Button */}
+        <TouchableOpacity style={[styles.addButton, { borderColor: colors.border }]}>
+          <Ionicons name="add-circle-outline" size={24} color={colors.primary} />
+          <Text style={[styles.addButtonText, { color: colors.primary }]}>Add New Payment Method</Text>
+        </TouchableOpacity>
 
         {/* Payment Process Explanation */}
         <View style={[styles.processCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -168,12 +187,13 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
+  backButton: { padding: 4 },
   headerTitle: { fontSize: 18, fontWeight: 'bold' },
   content: { padding: 16 },
   infoCard: {
@@ -208,7 +228,6 @@ const styles = StyleSheet.create({
   },
   methodType: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   methodDescription: { fontSize: 12 },
-  methodActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   defaultBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   defaultText: { fontSize: 11, fontWeight: '600' },
   methodFooter: {
@@ -229,13 +248,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   instructionText: { fontSize: 12, fontWeight: '500' },
-  setDefaultButton: { paddingVertical: 6 },
   setDefaultText: { fontSize: 12, fontWeight: '500' },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    marginVertical: 20,
+  },
+  addButtonText: { fontSize: 16, fontWeight: '500' },
   processCard: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
-    marginTop: 20,
+    marginTop: 10,
   },
   processTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 16 },
   processStep: {

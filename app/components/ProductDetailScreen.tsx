@@ -15,6 +15,17 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import { useCart } from './cart';
 
+// Backend API base URL for images
+const API_BASE_URL = 'http://172.20.10.10:8000';
+
+// Helper function to get image URL from backend
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/media/')) return `${API_BASE_URL}${imagePath}`;
+  return `${API_BASE_URL}/media/${imagePath}`;
+};
+
 interface Product {
   id: string;
   name: string;
@@ -26,6 +37,7 @@ interface Product {
   specs: string[];
   owner: string;
   category: string;
+  image_url?: string | null;
 }
 
 interface Review {
@@ -46,11 +58,19 @@ export default function ProductDetailScreen() {
   const [rentalDuration, setRentalDuration] = useState<'hours' | 'days' | 'weeks'>('hours');
   const [quantity, setQuantity] = useState(1);
 
-  // Mock Product images (in real app, you'd have multiple images)
+  // Get product image - prioritizes backend uploaded image
+  const getProductImage = () => {
+    if (product.image_url) {
+      return { uri: getImageUrl(product.image_url) };
+    }
+    return product.image;
+  };
+
+  // Product images array
   const productImages = [
-    product.image,
-    product.image, // Using same image as placeholder
-    product.image, // Using same image as placeholder
+    getProductImage(),
+    getProductImage(),
+    getProductImage(),
   ];
 
   // Mock reviews data
@@ -82,20 +102,56 @@ export default function ProductDetailScreen() {
     router.back();
   };
 
+  // ============ FIXED: Safe price parsing ============
   const calculatePrice = () => {
-    const basePrice = parseFloat(product.price.replace('₱', '').replace('/hour', ''));
-    let multiplier = 1;
-    
-    switch (rentalDuration) {
-      case 'days':
-        multiplier = 24; // 1 day = 24 hours
-        break;
-      case 'weeks':
-        multiplier = 168; // 1 week = 168 hours
-        break;
+    // Safe price parsing - handle missing or invalid price
+    if (!product || !product.price) {
+      console.warn('Product price is missing:', product);
+      return 0;
     }
     
-    return basePrice * multiplier * quantity;
+    try {
+      // Handle different price formats
+      let priceString = product.price.toString();
+      // Remove ₱ symbol and anything after /hour
+      priceString = priceString.replace(/[₱]/g, '').replace(/\/hour.*$/, '');
+      const basePrice = parseFloat(priceString);
+      
+      if (isNaN(basePrice)) {
+        console.warn('Could not parse price:', product.price);
+        return 0;
+      }
+      
+      let multiplier = 1;
+      
+      switch (rentalDuration) {
+        case 'days':
+          multiplier = 24;
+          break;
+        case 'weeks':
+          multiplier = 168;
+          break;
+      }
+      
+      return basePrice * multiplier * quantity;
+    } catch (error) {
+      console.error('Error calculating price:', error);
+      return 0;
+    }
+  };
+
+  // ============ FIXED: Safe base price parsing for cart ============
+  const getBasePrice = (): number => {
+    if (!product || !product.price) {
+      return 0;
+    }
+    try {
+      const priceString = product.price.toString().replace(/[₱]/g, '').replace(/\/hour.*$/, '');
+      const basePrice = parseFloat(priceString);
+      return isNaN(basePrice) ? 0 : basePrice;
+    } catch {
+      return 0;
+    }
   };
 
   const getDurationLabel = (duration: string) => {
@@ -108,19 +164,19 @@ export default function ProductDetailScreen() {
   };
 
   const handleAddToCart = () => {
-    const basePrice = parseFloat(product.price.replace('₱', '').replace('/hour', ''));
+    const basePrice = getBasePrice();
     const totalPrice = calculatePrice();
     
     const cartItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: getProductImage(),
       owner: product.owner,
       rentalDuration,
       quantity,
       totalPrice,
-      basePrice, // Store base price for recalculations
+      basePrice,
     };
 
     addToCart(cartItem);
@@ -136,14 +192,14 @@ export default function ProductDetailScreen() {
   };
 
   const handleRentNow = () => {
-    const basePrice = parseFloat(product.price.replace('₱', '').replace('/hour', ''));
+    const basePrice = getBasePrice();
     const totalPrice = calculatePrice();
     
     const cartItem = {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: getProductImage(),
       owner: product.owner,
       rentalDuration,
       quantity,
@@ -153,7 +209,6 @@ export default function ProductDetailScreen() {
 
     addToCart(cartItem);
     
-    // Navigate directly to checkout
     router.push('../components/checkout');
   };
 
@@ -267,8 +322,8 @@ export default function ProductDetailScreen() {
             <View style={styles.durationButtons}>
               {[
                 { key: 'hours', label: 'Hourly', price: product.price },
-                { key: 'days', label: 'Daily', price: `₱${(parseFloat(product.price.replace('₱', '').replace('/hour', '')) * 24).toFixed(2)}/day` },
-                { key: 'weeks', label: 'Weekly', price: `₱${(parseFloat(product.price.replace('₱', '').replace('/hour', '')) * 168).toFixed(2)}/week` },
+                { key: 'days', label: 'Daily', price: product.price ? `₱${(getBasePrice() * 24).toFixed(2)}/day` : '₱0/day' },
+                { key: 'weeks', label: 'Weekly', price: product.price ? `₱${(getBasePrice() * 168).toFixed(2)}/week` : '₱0/week' },
               ].map((option) => (
                 <TouchableOpacity
                   key={option.key}
@@ -393,6 +448,7 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 12,
     marginBottom: 12,
+    resizeMode: 'cover',
   },
   thumbnailsList: {
     marginTop: 8,

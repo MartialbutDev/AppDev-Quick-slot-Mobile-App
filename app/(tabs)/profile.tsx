@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function ProfileScreen() {
@@ -21,10 +22,16 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [stats, setStats] = useState({
+    totalRentals: 0,
+    activeRentals: 0,
+    completedRentals: 0
+  });
 
   useEffect(() => {
     loadUserProfile();
     loadProfileImage();
+    loadUserStats();
   }, []);
 
   const loadUserProfile = async () => {
@@ -37,6 +44,24 @@ export default function ProfileScreen() {
       console.error('Error loading profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserStats = async () => {
+    try {
+      // Fetch user's rental stats from backend
+      const response = await apiClient.getMyOrders();
+      const orders = response.orders || [];
+      const active = orders.filter((o: any) => o.status === 'active' || o.status === 'pending').length;
+      const completed = orders.filter((o: any) => o.status === 'completed').length;
+      
+      setStats({
+        totalRentals: orders.length,
+        activeRentals: active,
+        completedRentals: completed
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
     }
   };
 
@@ -76,11 +101,31 @@ export default function ProfileScreen() {
       // Save to AsyncStorage
       await AsyncStorage.setItem('profileImage', imageUri);
       
-      // Here you would upload to your backend
-      // await uploadProfileImage(imageUri);
-      
       Alert.alert('Success', 'Profile picture updated!');
     }
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiClient.logout();
+              router.replace('/');
+            } catch (error) {
+              console.error('Logout error:', error);
+              router.replace('/');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const menuItems = [
@@ -113,7 +158,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={[styles.profileImagePlaceholder, { backgroundColor: colors.primary + '20' }]}>
                 <Text style={[styles.profileInitials, { color: colors.primary }]}>
-                  {user?.fullName?.charAt(0) || 'U'}
+                  {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
                 </Text>
               </View>
             )}
@@ -122,9 +167,27 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
           
-          <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || 'User'}</Text>
-          <Text style={[styles.userId, { color: colors.textSecondary }]}>{user?.studentId || 'Student ID'}</Text>
-          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email || 'Email'}</Text>
+          <Text style={[styles.userName, { color: colors.text }]}>{user?.fullName || user?.username || 'User'}</Text>
+          <Text style={[styles.userId, { color: colors.textSecondary }]}>ID: {user?.studentId || user?.id || 'N/A'}</Text>
+          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user?.email || 'No email'}</Text>
+          
+          {/* Stats Row */}
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.primary }]}>{stats.totalRentals}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total Rentals</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.warning }]}>{stats.activeRentals}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Active</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.success }]}>{stats.completedRentals}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Completed</Text>
+            </View>
+          </View>
         </View>
 
         {/* Menu Items */}
@@ -143,6 +206,23 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity 
+          style={[styles.logoutButton, { 
+            backgroundColor: colors.inputBackground,
+            borderColor: colors.border
+          }]}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={24} color={colors.error} />
+          <Text style={[styles.logoutText, { color: colors.error }]}>Logout</Text>
+        </TouchableOpacity>
+
+        {/* App Version */}
+        <Text style={[styles.versionText, { color: colors.textSecondary }]}>
+          QuickSlot v2.0.0
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -208,6 +288,31 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 14,
   },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingTop: 16,
+    width: '100%',
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#e0e0e0',
+  },
   menuContainer: {
     paddingHorizontal: 16,
     paddingTop: 24,
@@ -226,5 +331,27 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: 16,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    marginTop: 32,
+    marginBottom: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  versionText: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginBottom: 30,
+    marginTop: 10,
   },
 });

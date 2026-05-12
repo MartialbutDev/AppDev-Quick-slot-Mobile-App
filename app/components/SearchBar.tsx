@@ -15,7 +15,7 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
   onSearchPress, 
-  placeholder = "Search User" 
+  placeholder = "🔍 Search laptops, cameras, tablets..." 
 }) => {
   const { colors } = useTheme();
 
@@ -42,7 +42,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     </TouchableOpacity>
   );
 };
-//styles
 
 const styles = StyleSheet.create({
   searchInputContainer: {

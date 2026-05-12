@@ -1,7 +1,9 @@
+// app/components/CategoryScreen.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -9,20 +11,45 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
-interface Product {
-  id: string;
+// Backend API base URL for images
+const API_BASE_URL = 'http://172.20.10.10:8000';
+
+// Helper function to get image URL from backend
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/media/')) return `${API_BASE_URL}${imagePath}`;
+  return `${API_BASE_URL}/media/${imagePath}`;
+};
+
+// Get gadget image - uses backend uploaded image, shows placeholder if none
+const getGadgetImage = (gadget: any): any => {
+  if (gadget.image_url) {
+    return { uri: getImageUrl(gadget.image_url) };
+  }
+  // Placeholder image when no image is uploaded
+  return require('../../assets/images/Quickslot.png');
+};
+
+interface Gadget {
+  id: number;
   name: string;
-  price: string;
-  rating: number;
-  reviews: number;
+  category: number;
+  category_name: string;
+  brand: string;
+  model: string;
   description: string;
-  image: any;
   specs: string[];
+  daily_rate: string;
+  condition: string;
+  status: string;
+  times_rented: number;
+  image_url: string | null;
 }
 
 export default function CategoryScreen() {
@@ -31,191 +58,46 @@ export default function CategoryScreen() {
   const categoryId = params.id as string;
   const { colors } = useTheme();
 
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [products, setProducts] = useState<Gadget[]>([]);
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(true);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
 
-  // Mock Data for different categories
-  const categoryData: { [key: string]: Product[] } = {
-    '1': [ // Laptops
-      {
-        id: '1',
-        name: 'Acer Aspire Go 15',
-        price: '₱30.00/hour',
-        rating: 4.5,
-        reviews: 89,
-        description: 'Lightweight laptop perfect for students and professionals',
-        image: require('../../assets/images/laptop.png'),
-        specs: ['Intel Core i5', '8GB RAM', '256GB SSD', '15.6" Display']
-      },
-      {
-        id: '2',
-        name: 'Lenovo Ideapad Slim 3',
-        price: '₱35.00/hour',
-        rating: 4.7,
-        reviews: 124,
-        description: 'Sleek design with powerful performance',
-        image: require('../../assets/images/lenovo.png'),
-        specs: ['AMD Ryzen 5', '16GB RAM', '512GB SSD', '14" Display']
-      },
-      {
-        id: '3',
-        name: 'MacBook Pro M2',
-        price: '₱80.00/hour',
-        rating: 4.9,
-        reviews: 256,
-        description: 'Professional-grade laptop for creative work',
-        image: require('../../assets/images/Macbook.png'),
-        specs: ['Apple M2 Chip', '16GB RAM', '1TB SSD', '13" Retina Display']
-      },
-      {
-        id: '4',
-        name: 'Dell XPS 13',
-        price: '₱45.00/hour',
-        rating: 4.6,
-        reviews: 167,
-        description: 'Premium ultrabook with stunning display',
-        image: require('../../assets/images/Dell.png'),
-        specs: ['Intel Core i7', '16GB RAM', '512GB SSD', '13.4" InfinityEdge']
-      }
-    ],
-    '2': [ // Gaming PCs
-      {
-        id: '5',
-        name: 'Gaming PC RTX 4080',
-        price: '₱120.00/hour',
-        rating: 4.8,
-        reviews: 78,
-        description: 'High-end gaming rig for ultimate performance',
-        image: require('../../assets/images/RTX.png'),
-        specs: ['RTX 4080', '32GB RAM', '2TB SSD', 'Intel i9-13900K']
-      },
-      {
-        id: '6',
-        name: 'Streaming Setup Pro',
-        price: '₱95.00/hour',
-        rating: 4.7,
-        reviews: 92,
-        description: 'Perfect setup for streaming and content creation',
-        image: require('../../assets/images/Stream.png'),
-        specs: ['RTX 4070', '64GB RAM', '1TB SSD', 'AMD Ryzen 9']
-      }
-    ],
-    '3': [ // Tablets
-      {
-        id: '7',
-        name: 'iPad Air M1',
-        price: '₱25.00/hour',
-        rating: 4.6,
-        reviews: 203,
-        description: 'Versatile tablet for work and entertainment',
-        image: require('../../assets/images/Ipad.png'),
-        specs: ['Apple M1 Chip', '64GB Storage', '10.9" Display', '5G Support']
-      },
-      {
-        id: '8',
-        name: 'Samsung Galaxy Tab S9',
-        price: '₱20.00/hour',
-        rating: 4.4,
-        reviews: 156,
-        description: 'Android tablet with S Pen included',
-        image: require('../../assets/images/Samsung.png'),
-        specs: ['Snapdragon 8 Gen 2', '128GB Storage', '11" Display', 'S Pen']
-      }
-    ],
-    '4': [ // Cameras
-      {
-        id: '9',
-        name: 'Canon EOS R5',
-        price: '₱50.00/hour',
-        rating: 4.9,
-        reviews: 89,
-        description: 'Professional mirrorless camera for photography',
-        image: require('../../assets/images/Canon.png'),
-        specs: ['45MP Full Frame', '8K Video', 'IBIS', 'Dual Pixel AF']
-      },
-      {
-        id: '10',
-        name: 'Sony A7IV',
-        price: '₱45.00/hour',
-        rating: 4.8,
-        reviews: 112,
-        description: 'All-round mirrorless camera for video and photo',
-        image: require('../../assets/images/Sony.png'),
-        specs: ['33MP Full Frame', '4K 60p', 'Real-time Tracking', '10fps']
-      }
-    ],
-    '5': [ // Phones
-      {
-        id: '11',
-        name: 'iPhone 15 Pro',
-        price: '₱15.00/hour',
-        rating: 4.7,
-        reviews: 345,
-        description: 'Latest iPhone with professional features',
-        image: require('../../assets/images/Iphone.png'),
-        specs: ['A17 Pro Chip', '128GB Storage', '48MP Camera', 'Titanium']
-      },
-      {
-        id: '12',
-        name: 'Samsung Galaxy S24',
-        price: '₱12.00/hour',
-        rating: 4.5,
-        reviews: 278,
-        description: 'Android flagship with AI features',
-        image: require('../../assets/images/Samsung1.png'),
-        specs: ['Snapdragon 8 Gen 3', '256GB Storage', '200MP Camera', 'AI']
-      }
-    ],
-    '6': [ // Accessories
-      {
-        id: '13',
-        name: 'Wireless Keyboard & Mouse',
-        price: '₱5.00/hour',
-        rating: 4.3,
-        reviews: 189,
-        description: 'Ergonomic wireless combo set',
-        image: require('../../assets/images/Wireless.png'),
-        specs: ['Bluetooth 5.0', 'Rechargeable', 'Silent Keys', '2.4GHz']
-      },
-      {
-        id: '14',
-        name: 'Scientific Calculator',
-        price: '₱8.00/hour',
-        rating: 4.6,
-        reviews: 134,
-        description: 'Professional scientific calculator for students',
-        image: require('../../assets/images/Scical.png'),
-        specs: ['Casio fx-83GT', 'Scientific Functions', 'Battery Powered']
-      }, 
-      {
-        id: '15',
-        name: 'Sign pen Ball pen',
-        price: '₱8.00/hour',
-        rating: 4.6,
-        reviews: 134,
-        description: 'Professional Sign pen for students',
-        image: require('../../assets/images/ballpen.png'),
-        specs: ['Casio fx-83GT', 'Scientific ballpen', 'Good for exam']
-      }
-    ]
-  };
+  useEffect(() => {
+    loadCategoryProducts();
+  }, [categoryId]);
 
-  const products = categoryData[categoryId] || [];
-
-  // Load favorites on component mount
   useEffect(() => {
     loadFavorites();
   }, []);
+
+  const loadCategoryProducts = async () => {
+    try {
+      setLoading(true);
+      const allGadgets = await apiClient.getGadgets();
+      const filteredGadgets = allGadgets.filter(
+        (g: Gadget) => g.category_name?.toLowerCase() === categoryName?.toLowerCase() || 
+                       g.category?.toString() === categoryId
+      );
+      setProducts(filteredGadgets);
+    } catch (error) {
+      console.error('Error loading category products:', error);
+      Alert.alert('Error', 'Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadFavorites = async () => {
     try {
       setLoadingFavorites(true);
       const response = await apiClient.getFavorites();
-      // Fix: Explicitly type the Set as Set<string>
-      const favoriteIds = new Set<string>(response.favorites?.map((fav: any) => fav.productId as string) || []);
+      const favoriteIds = new Set<number>(
+        response.favorites?.map((fav: any) => parseInt(fav.productId)) || []
+      );
       setFavorites(favoriteIds);
     } catch (error) {
-      console.error('❌ Load favorites error:', error);
+      console.error('Error loading favorites:', error);
     } finally {
       setLoadingFavorites(false);
     }
@@ -225,26 +107,31 @@ export default function CategoryScreen() {
     router.back();
   };
 
-  const handleProductPress = (product: Product) => {
-    // Add owner and category info to product for the detail page
+  const handleProductPress = (product: Gadget) => {
     const productWithDetails = {
-      ...product,
-      owner: getOwnerByCategory(categoryId),
-      category: categoryName,
+      id: product.id.toString(),
+      name: product.name,
+      price: `₱${product.daily_rate}/hour`,
+      rating: 4.5,
+      reviews: product.times_rented || 0,
+      description: product.description,
+      image: getGadgetImage(product),
+      specs: product.specs || ['No specifications listed'],
+      owner: product.brand || 'QuickSlot Partner',
+      category: product.category_name,
+      image_url: product.image_url,
     };
     
-    // Navigate to product detail page
     router.push({
       pathname: '../components/product-detail',
       params: { product: JSON.stringify(productWithDetails) }
     });
   };
 
-  const handleToggleFavorite = async (product: Product) => {
+  const handleToggleFavorite = async (product: Gadget) => {
     try {
       if (favorites.has(product.id)) {
-        // Remove from favorites
-        await apiClient.removeFromFavorites(product.id);
+        await apiClient.removeFromFavorites(product.id.toString());
         setFavorites(prev => {
           const newFavorites = new Set(prev);
           newFavorites.delete(product.id);
@@ -252,13 +139,10 @@ export default function CategoryScreen() {
         });
         Alert.alert('Success', 'Removed from favorites');
       } else {
-        // Don't store the image (require() can't be serialized)
-        // We'll use the product name to map to images in favorites screen
         await apiClient.addToFavorites({
-          productId: product.id,
+          productId: product.id.toString(),
           productName: product.name,
-          productPrice: product.price,
-          productImage: '', // Don't store the require() reference
+          productPrice: `₱${product.daily_rate}/hour`,
           productDescription: product.description,
           category: categoryName,
         });
@@ -270,25 +154,12 @@ export default function CategoryScreen() {
         Alert.alert('Success', 'Added to favorites');
       }
     } catch (error: any) {
-      console.error('❌ Toggle favorite error:', error);
-      Alert.alert('Error', 'Failed to update favorites');
+      console.error('Error toggling favorite:', error);
+      Alert.alert('Error', error.message || 'Failed to update favorites');
     }
   };
 
-  // Helper function to get owner based on category
-  const getOwnerByCategory = (categoryId: string) => {
-    const owners: { [key: string]: string } = {
-      '1': 'Aligsao Gadgets',
-      '2': 'Tech Rent PH',
-      '3': 'Gadget Hub',
-      '4': 'Camera Pro Rentals',
-      '5': 'Phone Rentals Co.',
-      '6': 'Accessory World'
-    };
-    return owners[categoryId] || 'QuickSlot Partner';
-  };
-
-  const renderProductItem = ({ item }: { item: Product }) => (
+  const renderProductItem = ({ item }: { item: Gadget }) => (
     <TouchableOpacity 
       style={[styles.productCard, { 
         backgroundColor: colors.card,
@@ -297,9 +168,8 @@ export default function CategoryScreen() {
       }]}
       onPress={() => handleProductPress(item)}
     >
-      <Image source={item.image} style={styles.productImage} />
+      <Image source={getGadgetImage(item)} style={styles.productImage} />
       
-      {/* Favorite Button */}
       <TouchableOpacity 
         style={[styles.favoriteButton, { backgroundColor: colors.surface }]}
         onPress={() => handleToggleFavorite(item)}
@@ -314,24 +184,30 @@ export default function CategoryScreen() {
       
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: colors.text }]}>{item.name}</Text>
-        <Text style={[styles.productDescription, { color: colors.textSecondary }]}>{item.description}</Text>
+        <Text style={[styles.productDescription, { color: colors.textSecondary }]} numberOfLines={2}>
+          {item.description || `${item.brand} ${item.model}`}
+        </Text>
         
-        <View style={styles.specsContainer}>
-          {item.specs.map((spec, index) => (
-            <View key={index} style={[styles.specTag, { backgroundColor: colors.rateBadge, borderColor: colors.border }]}>
-              <Text style={[styles.specText, { color: colors.primary }]}>{spec}</Text>
-            </View>
-          ))}
-        </View>
+        {item.specs && item.specs.length > 0 && (
+          <View style={styles.specsContainer}>
+            {item.specs.slice(0, 3).map((spec, index) => (
+              <View key={index} style={[styles.specTag, { backgroundColor: colors.rateBadge, borderColor: colors.border }]}>
+                <Text style={[styles.specText, { color: colors.primary }]} numberOfLines={1}>
+                  {spec}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
         
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={16} color={colors.rating} />
-          <Text style={[styles.ratingText, { color: colors.text }]}>{item.rating}</Text>
-          <Text style={[styles.reviewsText, { color: colors.textSecondary }]}>({item.reviews} reviews)</Text>
+          <Text style={[styles.ratingText, { color: colors.text }]}>4.5</Text>
+          <Text style={[styles.reviewsText, { color: colors.textSecondary }]}>({item.times_rented || 0} rentals)</Text>
         </View>
         
         <View style={styles.priceContainer}>
-          <Text style={[styles.price, { color: colors.primary }]}>{item.price}</Text>
+          <Text style={[styles.price, { color: colors.primary }]}>₱{item.daily_rate}/hour</Text>
           <TouchableOpacity 
             style={[styles.rentButton, { backgroundColor: colors.primary }]}
             onPress={() => handleProductPress(item)}
@@ -343,9 +219,29 @@ export default function CategoryScreen() {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { 
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border 
+        }]}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>{categoryName}</Text>
+          <View style={styles.headerRight} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading {categoryName}...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[styles.header, { 
         backgroundColor: colors.surface,
         borderBottomColor: colors.border 
@@ -357,17 +253,19 @@ export default function CategoryScreen() {
         <View style={styles.headerRight} />
       </View>
 
-      {/* Products List */}
       <FlatList
         data={products}
         renderItem={renderProductItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="search-outline" size={80} color={colors.textSecondary} />
             <Text style={[styles.emptyStateText, { color: colors.text }]}>No products found</Text>
+            <Text style={[styles.emptyStateSubtext, { color: colors.textSecondary }]}>
+              No gadgets available in {categoryName} at the moment
+            </Text>
           </View>
         }
       />
@@ -397,6 +295,15 @@ const styles = StyleSheet.create({
   headerRight: {
     width: 32,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+  },
   listContent: {
     padding: 16,
   },
@@ -409,11 +316,13 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     overflow: 'hidden',
+    position: 'relative',
   },
   productImage: {
     width: '100%',
     height: 200,
     backgroundColor: '#f5f5f5',
+    resizeMode: 'cover',
   },
   favoriteButton: {
     position: 'absolute',
@@ -495,7 +404,14 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyStateText: {
-    fontSize: 16,
-    marginTop: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    paddingHorizontal: 40,
   },
 });

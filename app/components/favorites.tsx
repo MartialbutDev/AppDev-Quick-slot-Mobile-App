@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -13,6 +14,18 @@ import {
   View,
 } from 'react-native';
 import { apiClient } from '../api/client';
+import { useTheme } from '../contexts/ThemeContext';
+
+// Backend API base URL for images
+const API_BASE_URL = 'http://192.168.1.63:8000';
+
+// Helper function to get image URL from backend
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/media/')) return `${API_BASE_URL}${imagePath}`;
+  return `${API_BASE_URL}/media/${imagePath}`;
+};
 
 interface Favorite {
   id: string;
@@ -25,16 +38,50 @@ interface Favorite {
   addedAt: string;
 }
 
+interface GadgetDetails {
+  id: number;
+  name: string;
+  daily_rate: string;
+  image_url: string | null;
+  category_name: string;
+  description: string;
+  brand: string;
+}
+
 export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
+  const [gadgetDetails, setGadgetDetails] = useState<Map<string, GadgetDetails>>(new Map());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const { colors } = useTheme();
 
   const loadFavorites = async () => {
     try {
       setLoading(true);
       const response = await apiClient.getFavorites();
-      setFavorites(response.favorites || []);
+      const favs = response.favorites || [];
+      setFavorites(favs);
+      
+      // Fetch full gadget details for each favorite
+      const allGadgets = await apiClient.getGadgets();
+      const detailsMap = new Map<string, GadgetDetails>();
+      
+      favs.forEach((fav: Favorite) => {
+        const gadget = allGadgets.find((g: any) => g.id === parseInt(fav.productId));
+        if (gadget) {
+          detailsMap.set(fav.productId, {
+            id: gadget.id,
+            name: gadget.name,
+            daily_rate: gadget.daily_rate,
+            image_url: gadget.image_url,
+            category_name: gadget.category_name,
+            description: gadget.description,
+            brand: gadget.brand,
+          });
+        }
+      });
+      
+      setGadgetDetails(detailsMap);
     } catch (error: any) {
       console.error('❌ Load favorites error:', error);
       Alert.alert('Error', 'Failed to load favorites');
@@ -66,6 +113,11 @@ export default function FavoritesScreen() {
             try {
               await apiClient.removeFromFavorites(productId);
               setFavorites(prev => prev.filter(fav => fav.productId !== productId));
+              setGadgetDetails(prev => {
+                const newMap = new Map(prev);
+                newMap.delete(productId);
+                return newMap;
+              });
               Alert.alert('Success', 'Removed from favorites');
             } catch (error: any) {
               console.error('❌ Remove favorite error:', error);
@@ -78,87 +130,166 @@ export default function FavoritesScreen() {
   };
 
   const handleProductPress = (favorite: Favorite) => {
-    // Navigate to Product detail page
-    router.push({
-      pathname: '../components/product-detail',
-      params: { 
-        product: JSON.stringify({
-          id: favorite.productId,
-          name: favorite.productName,
-          price: favorite.productPrice,
-          description: favorite.productDescription,
-          image: favorite.productImage,
-          category: favorite.category,
-        })
-      }
-    });
+    const gadget = gadgetDetails.get(favorite.productId);
+    
+    if (gadget) {
+      const product = {
+        id: gadget.id.toString(),
+        name: gadget.name,
+        price: `₱${gadget.daily_rate}/hour`,
+        rating: 4.5,
+        reviews: 0,
+        description: gadget.description || favorite.productDescription,
+        image: gadget.image_url ? { uri: getImageUrl(gadget.image_url) } : null,
+        specs: ['No specifications listed'],
+        owner: gadget.brand || 'QuickSlot Partner',
+        category: gadget.category_name || favorite.category,
+        image_url: gadget.image_url,
+      };
+      
+      router.push({
+        pathname: '../components/product-detail',
+        params: { product: JSON.stringify(product) }
+      });
+    } else {
+      // Fallback to favorite data
+      const product = {
+        id: favorite.productId,
+        name: favorite.productName,
+        price: favorite.productPrice || '₱0/hour',
+        rating: 4.5,
+        reviews: 0,
+        description: favorite.productDescription,
+        image: null,
+        specs: ['No specifications listed'],
+        owner: 'QuickSlot Partner',
+        category: favorite.category,
+        image_url: null,
+      };
+      
+      router.push({
+        pathname: '../components/product-detail',
+        params: { product: JSON.stringify(product) }
+      });
+    }
   };
 
-  const renderFavoriteItem = ({ item }: { item: Favorite }) => (
-    <TouchableOpacity 
-      style={styles.favoriteCard}
-      onPress={() => handleProductPress(item)}
-    >
-      {/* Simple placeholder if no image available */}
-      <View style={styles.imageContainer}>
-        {item.productImage ? (
-          <Image 
-            source={{ uri: item.productImage }} 
-            style={styles.productImage} 
-          />
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Ionicons name="image-outline" size={32} color="#ccc" />
-          </View>
-        )}
-      </View>
-      
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.productName}</Text>
-        <Text style={styles.productDescription} numberOfLines={2}>
-          {item.productDescription}
-        </Text>
-        <Text style={styles.productPrice}>{item.productPrice}</Text>
-        <Text style={styles.category}>Category: {item.category}</Text>
-        <Text style={styles.addedDate}>
-          Added: {new Date(item.addedAt).toLocaleDateString()}
-        </Text>
-      </View>
+  const renderFavoriteItem = ({ item }: { item: Favorite }) => {
+    const gadget = gadgetDetails.get(item.productId);
+    
+    // Get image from gadget details or fallback
+    const imageSource = gadget?.image_url 
+      ? { uri: getImageUrl(gadget.image_url) }
+      : (item.productImage ? { uri: getImageUrl(item.productImage) } : null);
+    
+    // Get price from gadget details or fallback
+    const displayPrice = gadget 
+      ? `₱${gadget.daily_rate}/hour` 
+      : (item.productPrice || '₱0/hour');
+    
+    // Get description from gadget or fallback
+    const displayDescription = gadget?.description || item.productDescription || 'No description available';
+    
+    // Get category from gadget or fallback
+    const displayCategory = gadget?.category_name || item.category || 'Others';
 
+    return (
       <TouchableOpacity 
-        style={styles.removeButton}
-        onPress={() => handleRemoveFavorite(item.productId, item.productName)}
+        style={[styles.favoriteCard, { 
+          backgroundColor: colors.card,
+          borderColor: colors.border,
+          shadowColor: colors.shadow,
+        }]}
+        onPress={() => handleProductPress(item)}
       >
-        <Ionicons name="heart" size={24} color="#FF3B30" />
+        <View style={styles.imageContainer}>
+          {imageSource ? (
+            <Image 
+              source={imageSource} 
+              style={styles.productImage} 
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.placeholderImage, { borderColor: colors.border }]}>
+              <Ionicons name="image-outline" size={32} color={colors.textSecondary} />
+              <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>No Image</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.productInfo}>
+          <Text style={[styles.productName, { color: colors.text }]}>{item.productName}</Text>
+          <Text style={[styles.productDescription, { color: colors.textSecondary }]} numberOfLines={2}>
+            {displayDescription}
+          </Text>
+          <Text style={[styles.productPrice, { color: colors.primary }]}>{displayPrice}</Text>
+          <Text style={[styles.category, { color: colors.textSecondary }]}>Category: {displayCategory}</Text>
+          <Text style={[styles.addedDate, { color: colors.textSecondary }]}>
+            Added: {new Date(item.addedAt).toLocaleDateString()}
+          </Text>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.removeButton}
+          onPress={() => handleRemoveFavorite(item.productId, item.productName)}
+        >
+          <Ionicons name="heart" size={24} color={colors.error} />
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="heart-outline" size={80} color="#ccc" />
-      <Text style={styles.emptyStateTitle}>No Favorites Yet</Text>
-      <Text style={styles.emptyStateText}>
+      <Ionicons name="heart-outline" size={80} color={colors.textSecondary} />
+      <Text style={[styles.emptyStateTitle, { color: colors.text }]}>No Favorites Yet</Text>
+      <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>
         Products you add to favorites will appear here
       </Text>
       <TouchableOpacity 
-        style={styles.browseButton}
-        onPress={() => router.back()}
+        style={[styles.browseButton, { backgroundColor: colors.primary }]}
+        onPress={() => router.push('/(tabs)/explore')}
       >
         <Text style={styles.browseButtonText}>Browse Products</Text>
       </TouchableOpacity>
     </View>
   );
 
+  if (loading && favorites.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { 
+          backgroundColor: colors.surface,
+          borderBottomColor: colors.border 
+        }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>My Favorites</Text>
+          <View style={styles.headerRight} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading favorites...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { 
+        backgroundColor: colors.surface,
+        borderBottomColor: colors.border 
+      }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Favorites</Text>
-        <View style={styles.headerRight} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>My Favorites</Text>
+        <TouchableOpacity onPress={loadFavorites} style={styles.refreshButton}>
+          <Ionicons name="refresh-outline" size={22} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       {/* Favorites List */}
@@ -169,7 +300,7 @@ export default function FavoritesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
         ListEmptyComponent={!loading ? renderEmptyState : null}
         ListFooterComponent={favorites.length > 0 ? <View style={styles.footer} /> : null}
@@ -181,7 +312,6 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
@@ -189,9 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   backButton: {
     padding: 4,
@@ -199,29 +327,37 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
   },
   headerRight: {
     width: 32,
+  },
+  refreshButton: {
+    padding: 4,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
   },
   listContent: {
     padding: 16,
     flexGrow: 1,
   },
   favoriteCard: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
   },
   imageContainer: {
     width: 80,
@@ -241,8 +377,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     borderStyle: 'dashed',
+  },
+  placeholderText: {
+    fontSize: 10,
+    marginTop: 4,
+    textAlign: 'center',
   },
   productInfo: {
     flex: 1,
@@ -252,29 +392,24 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a1a1a',
     marginBottom: 4,
   },
   productDescription: {
     fontSize: 14,
-    color: '#666',
     marginBottom: 4,
     lineHeight: 18,
   },
   productPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#007AFF',
     marginBottom: 2,
   },
   category: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 2,
   },
   addedDate: {
     fontSize: 11,
-    color: '#999',
   },
   removeButton: {
     padding: 8,
@@ -287,19 +422,16 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 14,
-    color: '#999',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
   browseButton: {
-    backgroundColor: '#007AFF',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

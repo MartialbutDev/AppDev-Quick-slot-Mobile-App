@@ -16,201 +16,98 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { apiClient } from '../api/client';
 import DrawerMenu from '../components/DrawerMenu';
 import SearchBar from '../components/SearchBar';
 import { useTheme } from '../contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock Data for all products
-const allProducts = [
-  {
-    id: '1',
-    name: 'Acer Aspire Go 15',
-    price: '₱30.00/hour',
-    rating: 4.5,
-    reviews: 89,
-    description: 'Lightweight laptop perfect for students and professionals',
-    image: require('../../assets/images/laptop.png'),
-    specs: ['Intel Core i5', '8GB RAM', '256GB SSD', '15.6" Display'],
-    owner: 'Aligsao Gadgets',
-    category: 'Laptops'
-  },
-  {
-    id: '2',
-    name: 'Lenovo Ideapad Slim 3',
-    price: '₱35.00/hour',
-    rating: 4.7,
-    reviews: 124,
-    description: 'Sleek design with powerful performance',
-    image: require('../../assets/images/lenovo.png'),
-    specs: ['AMD Ryzen 5', '16GB RAM', '512GB SSD', '14" Display'],
-    owner: 'Tech Rent PH',
-    category: 'Laptops'
-  },
-  {
-    id: '3',
-    name: 'MacBook Pro M2',
-    price: '₱80.00/hour',
-    rating: 4.9,
-    reviews: 256,
-    description: 'Professional-grade laptop for creative work',
-    image: require('../../assets/images/Macbook.png'),
-    specs: ['Apple M2 Chip', '16GB RAM', '1TB SSD', '13" Retina Display'],
-    owner: 'Gadget Hub',
-    category: 'Laptops'
-  },
-  {
-    id: '4',
-    name: 'Dell XPS 13',
-    price: '₱45.00/hour',
-    rating: 4.6,
-    reviews: 167,
-    description: 'Premium ultrabook with stunning display',
-    image: require('../../assets/images/Dell.png'),
-    specs: ['Intel Core i7', '16GB RAM', '512GB SSD', '13.4" InfinityEdge'],
-    owner: 'Aligsao Gadgets',
-    category: 'Laptops'
-  },
-  {
-    id: '5',
-    name: 'Gaming PC RTX 4080',
-    price: '₱120.00/hour',
-    rating: 4.8,
-    reviews: 78,
-    description: 'High-end gaming rig for ultimate performance',
-    image: require('../../assets/images/RTX.png'),
-    specs: ['RTX 4080', '32GB RAM', '2TB SSD', 'Intel i9-13900K'],
-    owner: 'Tech Rent PH',
-    category: 'Gaming PCs'
-  },
-  {
-    id: '6',
-    name: 'Streaming Setup Pro',
-    price: '₱95.00/hour',
-    rating: 4.7,
-    reviews: 92,
-    description: 'Perfect setup for streaming and content creation',
-    image: require('../../assets/images/Stream.png'),
-    specs: ['RTX 4070', '64GB RAM', '1TB SSD', 'AMD Ryzen 9'],
-    owner: 'Gadget Hub',
-    category: 'Gaming PCs'
-  },
-  {
-    id: '7',
-    name: 'iPad Air M1',
-    price: '₱25.00/hour',
-    rating: 4.6,
-    reviews: 203,
-    description: 'Versatile tablet for work and entertainment',
-    image: require('../../assets/images/Ipad.png'),
-    specs: ['Apple M1 Chip', '64GB Storage', '10.9" Display', '5G Support'],
-    owner: 'Aligsao Gadgets',
-    category: 'Tablets'
-  },
-  {
-    id: '8',
-    name: 'Samsung Galaxy Tab S9',
-    price: '₱20.00/hour',
-    rating: 4.4,
-    reviews: 156,
-    description: 'Android tablet with S Pen included',
-    image: require('../../assets/images/Samsung.png'),
-    specs: ['Snapdragon 8 Gen 2', '128GB Storage', '11" Display', 'S Pen'],
-    owner: 'Tech Rent PH',
-    category: 'Tablets'
-  },
-  {
-    id: '9',
-    name: 'Canon EOS R5',
-    price: '₱50.00/hour',
-    rating: 4.9,
-    reviews: 89,
-    description: 'Professional mirrorless camera for photography',
-    image: require('../../assets/images/Canon.png'),
-    specs: ['45MP Full Frame', '8K Video', 'IBIS', 'Dual Pixel AF'],
-    owner: 'Camera Pro Rentals',
-    category: 'Cameras'
-  },
-  {
-    id: '10',
-    name: 'Sony A7IV',
-    price: '₱45.00/hour',
-    rating: 4.8,
-    reviews: 112,
-    description: 'All-round mirrorless camera for video and photo',
-    image: require('../../assets/images/Sony.png'),
-    specs: ['33MP Full Frame', '4K 60p', 'Real-time Tracking', '10fps'],
-    owner: 'Camera Pro Rentals',
-    category: 'Cameras'
-  },
-  {
-    id: '11',
-    name: 'iPhone 15 Pro',
-    price: '₱15.00/hour',
-    rating: 4.7,
-    reviews: 345,
-    description: 'Latest iPhone with professional features',
-    image: require('../../assets/images/Iphone.png'),
-    specs: ['A17 Pro Chip', '128GB Storage', '48MP Camera', 'Titanium'],
-    owner: 'Phone Rentals Co.',
-    category: 'Phones'
-  },
-  {
-    id: '12',
-    name: 'Samsung Galaxy S24',
-    price: '₱12.00/hour',
-    rating: 4.5,
-    reviews: 278,
-    description: 'Android flagship with AI features',
-    image: require('../../assets/images/Samsung1.png'),
-    specs: ['Snapdragon 8 Gen 3', '256GB Storage', '200MP Camera', 'AI'],
-    owner: 'Phone Rentals Co.',
-    category: 'Phones'
-  },
-  {
-    id: '13',
-    name: 'Wireless Keyboard & Mouse',
-    price: '₱5.00/hour',
-    rating: 4.3,
-    reviews: 189,
-    description: 'Ergonomic wireless combo set',
-    image: require('../../assets/images/Wireless.png'),
-    specs: ['Bluetooth 5.0', 'Rechargeable', 'Silent Keys', '2.4GHz'],
-    owner: 'Accessory World',
-    category: 'Accessories'
-  },
-  {
-    id: '14',
-    name: 'Scientific Calculator',
-    price: '₱8.00/hour',
-    rating: 4.6,
-    reviews: 134,
-    description: 'Professional scientific calculator for students',
-    image: require('../../assets/images/Scical.png'),
-    specs: ['Casio fx-83GT', 'Scientific Functions', 'Battery Powered'],
-    owner: 'Accessory World',
-    category: 'Accessories'
-  },
-  {
-    id: '15',
-    name: 'Sign pen Ball pen',
-    price: '₱8.00/hour',
-    rating: 4.6,
-    reviews: 134,
-    description: 'Professional Sign pen for students',
-    image: require('../../assets/images/ballpen.png'),
-    specs: ['Casio fx-83GT', 'Scientific ballpen', 'Good for exam'],
-    owner: 'Accessory World',
-    category: 'Accessories'
-  }
-];
+// Type for Ionicons names
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-export default function Homepage() {
+// Backend API base URL for images
+const API_BASE_URL = 'http://172.20.10.10:8000';
+
+// Helper function to get image URL from backend
+const getImageUrl = (imagePath: string | null | undefined): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  if (imagePath.startsWith('/media/')) return `${API_BASE_URL}${imagePath}`;
+  return `${API_BASE_URL}/media/${imagePath}`;
+};
+
+// Get gadget image - prioritizes backend uploaded image, falls back to local
+const getGadgetImage = (gadget: any): any => {
+  // If gadget has a custom image URL from backend, use it
+  if (gadget.image_url) {
+    return { uri: getImageUrl(gadget.image_url) };
+  }
+  
+  // Fallback to local images based on category
+  const imageMap: { [key: string]: any } = {
+    'Laptop': require('../../assets/images/laptop.png'),
+    'Laptops': require('../../assets/images/laptop.png'),
+    'Gaming PC': require('../../assets/images/RTX.png'),
+    'Tablet': require('../../assets/images/Ipad.png'),
+    'Tablets': require('../../assets/images/Ipad.png'),
+    'Camera': require('../../assets/images/Canon.png'),
+    'Cameras': require('../../assets/images/Canon.png'),
+    'Phone': require('../../assets/images/Iphone.png'),
+    'Phones': require('../../assets/images/Iphone.png'),
+    'Accessory': require('../../assets/images/Wireless.png'),
+    'Accessories': require('../../assets/images/Wireless.png'),
+    'Projector': require('../../assets/images/Stream.png'),
+    'Projectors': require('../../assets/images/Stream.png'),
+    'Calculator': require('../../assets/images/Scical.png'),
+    'Calculators': require('../../assets/images/Scical.png'),
+  };
+  return imageMap[gadget.category_name] || require('../../assets/images/Quickslot.png');
+};
+
+// Get category icon based on name
+const getCategoryIcon = (categoryName: string): IconName => {
+  const iconMap: Record<string, IconName> = {
+    'Laptops': 'laptop-outline',
+    'Tablets': 'tablet-portrait-outline',
+    'Cameras': 'camera-outline',
+    'Phones': 'phone-portrait-outline',
+    'Projectors': 'videocam-outline',
+    'Calculators': 'calculator-outline',
+    'Accessories': 'hardware-chip-outline',
+  };
+  return iconMap[categoryName] || 'grid-outline';
+};
+
+interface Gadget {
+  id: number;
+  name: string;
+  category: number;
+  category_name: string;
+  brand: string;
+  model: string;
+  description: string;
+  specs: string[];
+  daily_rate: string;
+  condition: string;
+  status: string;
+  times_rented: number;
+  image_url: string | null;
+}
+
+function Homepage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [slideAnim] = useState(new Animated.Value(-width * 0.85));
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [mlRecommendations, setMlRecommendations] = useState<any[]>([]);
+  const [loadingML, setLoadingML] = useState(false);
+  const [gadgets, setGadgets] = useState<Gadget[]>([]);
+  const [loadingGadgets, setLoadingGadgets] = useState(true);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isExamWeek, setIsExamWeek] = useState(false);
+  const [examWeekName, setExamWeekName] = useState<string | null>(null);
+  const [popularGadgets, setPopularGadgets] = useState<Gadget[]>([]);
   const { colors, isDarkMode, toggleDarkMode } = useTheme();
 
   const currentTime = new Date().getHours();
@@ -224,7 +121,142 @@ export default function Homepage() {
 
   useEffect(() => {
     checkAuthentication();
+    fetchNotificationCount();
+    fetchGadgets();
+    fetchCategories();
+    fetchMLRecommendations();
+    fetchExamWeekStatus();
+    fetchPopularGadgets();
   }, []);
+
+  // Fetch exam week status from FastAPI
+  const fetchExamWeekStatus = async () => {
+    try {
+      const response = await fetch('http://172.20.10.10:8001/api/exam-week/status');
+      const data = await response.json();
+      setIsExamWeek(data.is_exam_week);
+      setExamWeekName(data.exam_week_name);
+      console.log(`📅 Exam Week Status: ${data.is_exam_week ? 'ACTIVE - ' + data.exam_week_name : 'Not active'}`);
+    } catch (error) {
+      console.log('Error fetching exam week status:', error);
+      setIsExamWeek(false);
+    }
+  };
+
+  // Fetch popular gadgets based on actual rental count (NOT ML predictions)
+  const fetchPopularGadgets = async () => {
+    try {
+      const allGadgets = await apiClient.getGadgets();
+      // Sort by times_rented (most rented first) and take top 5
+      const sorted = [...allGadgets].sort((a, b) => (b.times_rented || 0) - (a.times_rented || 0));
+      setPopularGadgets(sorted.slice(0, 5));
+      console.log('🔥 Popular gadgets (by rental count):', sorted.slice(0, 5).map(g => ({ name: g.name, rentals: g.times_rented })));
+    } catch (error) {
+      console.log('Error fetching popular gadgets:', error);
+    }
+  };
+
+  // ============ FIXED: Fetch gadgets from Django API with pagination handling ============
+  const fetchGadgets = async () => {
+    try {
+      setLoadingGadgets(true);
+      const response = await apiClient.getGadgets();
+      
+      console.log('📦 API Response:', response);
+      
+      // Handle paginated response (Django REST framework returns {count, next, previous, results})
+      let gadgetsList: Gadget[] = [];
+      
+      if (response && response.results && Array.isArray(response.results)) {
+        // Paginated response
+        gadgetsList = response.results;
+        console.log(`📦 Found ${gadgetsList.length} gadgets (paginated)`);
+      } else if (Array.isArray(response)) {
+        // Non-paginated response
+        gadgetsList = response;
+        console.log(`📦 Found ${gadgetsList.length} gadgets (direct array)`);
+      } else {
+        console.error('Unexpected response format:', response);
+        gadgetsList = [];
+      }
+      
+      // Filter only available gadgets (case insensitive)
+      const availableGadgets = gadgetsList.filter((g: Gadget) => 
+        g.status?.toLowerCase() === 'available'
+      );
+      
+      console.log(`✅ ${availableGadgets.length} available gadgets out of ${gadgetsList.length} total`);
+      
+      setGadgets(availableGadgets);
+    } catch (error) {
+      console.error('Error fetching gadgets:', error);
+      Alert.alert('Error', 'Failed to load gadgets. Please check your connection.');
+    } finally {
+      setLoadingGadgets(false);
+    }
+  };
+
+  // Fetch categories from Django API
+  const fetchCategories = async () => {
+    try {
+      const response = await apiClient.getCategories();
+      console.log('📦 Categories response:', response);
+      
+      let categoriesList: any[] = [];
+      if (response && response.results && Array.isArray(response.results)) {
+        categoriesList = response.results;
+      } else if (Array.isArray(response)) {
+        categoriesList = response;
+      } else {
+        categoriesList = [
+          { id: 1, name: 'Laptops' },
+          { id: 2, name: 'Tablets' },
+          { id: 3, name: 'Cameras' },
+          { id: 4, name: 'Phones' },
+          { id: 5, name: 'Projectors' },
+          { id: 6, name: 'Calculators' },
+        ];
+      }
+      setCategories(categoriesList);
+    } catch (error) {
+      console.log('Error fetching categories:', error);
+      // Fallback categories
+      setCategories([
+        { id: 1, name: 'Laptops' },
+        { id: 2, name: 'Tablets' },
+        { id: 3, name: 'Cameras' },
+        { id: 4, name: 'Phones' },
+        { id: 5, name: 'Projectors' },
+        { id: 6, name: 'Calculators' },
+      ]);
+    }
+  };
+
+  // Fetch ML recommendations from FastAPI
+  const fetchMLRecommendations = async () => {
+    try {
+      setLoadingML(true);
+      const response = await apiClient.getMLRecommendations();
+      if (response && response.recommendations) {
+        setMlRecommendations(response.recommendations);
+      }
+    } catch (error) {
+      console.log('Error fetching ML recommendations:', error);
+    } finally {
+      setLoadingML(false);
+    }
+  };
+
+  // Fetch notification count
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await apiClient.getNotifications();
+      const unreadCount = response.filter((n: any) => !n.read).length;
+      setNotificationCount(unreadCount);
+    } catch (error) {
+      console.log('Error fetching notifications:', error);
+    }
+  };
 
   const openDrawer = () => {
     setDrawerVisible(true);
@@ -268,35 +300,45 @@ export default function Homepage() {
     router.push('/notification');
   };
 
-  const handleCategoryPress = (category: { id: string; name: string }) => {
+  const handleCategoryPress = (category: any) => {
     router.push({
       pathname: '../components/category',
       params: { 
-        id: category.id,
+        id: category.id.toString(),
         category: category.name 
       }
     });
   };
 
-  const handleProductPress = (product: any) => {
+  const handleProductPress = (gadget: Gadget) => {
+    const product = {
+      id: gadget.id.toString(),
+      name: gadget.name,
+      price: `₱${gadget.daily_rate}/hour`,
+      rating: 4.5,
+      reviews: gadget.times_rented || 0,
+      description: gadget.description,
+      image: gadget.image_url ? { uri: getImageUrl(gadget.image_url) } : getGadgetImage(gadget),
+      specs: gadget.specs || ['No specifications listed'],
+      owner: gadget.brand || 'QuickSlot Partner',
+      category: gadget.category_name,
+      image_url: gadget.image_url,
+    };
+    
     router.push({
       pathname: '../components/product-detail',
       params: { product: JSON.stringify(product) }
     });
   };
 
-  // Categories for gadget types
-  const categories = [
-    { id: '1', name: 'Laptops', icon: 'laptop-outline', count: '24 available' },
-    { id: '2', name: 'Gaming PCs', icon: 'desktop-outline', count: '18 available' },
-    { id: '3', name: 'Tablets', icon: 'tablet-portrait-outline', count: '32 available' },
-    { id: '4', name: 'Cameras', icon: 'camera-outline', count: '15 available' },
-    { id: '5', name: 'Phones', icon: 'phone-portrait-outline', count: '45 available' },
-    { id: '6', name: 'Accessories', icon: 'hardware-chip-outline', count: '67 available' },
-  ];
+  // Get category count
+  const getCategoryCount = (categoryName: string) => {
+    const count = gadgets.filter(g => g.category_name === categoryName).length;
+    return `${count} available`;
+  };
 
-  // Render product item for the all items section
-  const renderProductItem = ({ item }: { item: any }) => (
+  // Render gadget item
+  const renderProductItem = ({ item }: { item: Gadget }) => (
     <TouchableOpacity 
       style={[styles.productCard, { 
         backgroundColor: colors.card,
@@ -305,28 +347,89 @@ export default function Homepage() {
       }]}
       onPress={() => handleProductPress(item)}
     >
-      <Image source={item.image} style={styles.productImage} />
+      <Image source={getGadgetImage(item)} style={styles.productImage} />
       
       <View style={styles.productInfo}>
         <Text style={[styles.productName, { color: colors.text }]}>{item.name}</Text>
         <Text style={[styles.productDescription, { color: colors.textSecondary }]} numberOfLines={2}>
-          {item.description}
+          {item.description || `${item.brand} ${item.model}`}
         </Text>
         
         <View style={styles.productMeta}>
           <View style={styles.ratingContainer}>
             <Ionicons name="star" size={16} color={colors.rating} />
-            <Text style={[styles.ratingText, { color: colors.text }]}>{item.rating}</Text>
-            <Text style={[styles.reviewsText, { color: colors.textSecondary }]}>({item.reviews})</Text>
+            <Text style={[styles.ratingText, { color: colors.text }]}>4.5</Text>
+            <Text style={[styles.reviewsText, { color: colors.textSecondary }]}>({item.times_rented || 0})</Text>
           </View>
-          <Text style={[styles.productCategory, { color: colors.primary }]}>{item.category}</Text>
+          <Text style={[styles.productCategory, { color: colors.primary }]}>{item.category_name}</Text>
         </View>
         
         <View style={styles.productFooter}>
-          <Text style={[styles.productOwner, { color: colors.textSecondary }]}>{item.owner}</Text>
-          <Text style={[styles.productPrice, { color: colors.primary }]}>{item.price}</Text>
+          <Text style={[styles.productOwner, { color: colors.textSecondary }]}>{item.brand || 'QuickSlot'}</Text>
+          <Text style={[styles.productPrice, { color: colors.primary }]}>₱{item.daily_rate}/hour</Text>
         </View>
       </View>
+    </TouchableOpacity>
+  );
+
+  // Render ML recommendation card (for exam week)
+  const renderMLRecommendation = ({ item }: { item: any }) => (
+    <TouchableOpacity 
+      style={[styles.mlCard, { 
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        shadowColor: colors.shadow,
+      }]}
+      onPress={() => {
+        const gadget = gadgets.find(g => 
+          g.category_name?.toLowerCase() === (item.gadget_category || item.gadget_name)?.toLowerCase()
+        );
+        if (gadget) {
+          handleProductPress(gadget);
+        }
+      }}
+    >
+      <Text style={[styles.mlCardTitle, { color: colors.text }]}>
+        {item.gadget_name || item.gadget_category}
+      </Text>
+      <Text style={[styles.mlCardProbability, { color: colors.primary }]}>
+        {Math.round((item.exam_week_probability || 0.5) * 100)}% demand
+      </Text>
+      {item.is_high_demand && (
+        <View style={[styles.highDemandBadge, { backgroundColor: colors.primary + '20' }]}>
+          <Text style={[styles.highDemandText, { color: colors.primary }]}>
+            🔥 High Demand
+          </Text>
+        </View>
+      )}
+      <Text style={[styles.mlCardHint, { color: colors.textSecondary }]}>
+        Recommended for Exam Week
+      </Text>
+    </TouchableOpacity>
+  );
+
+  // Render popular item card (based on actual rental count) - for normal days
+  const renderPopularItem = ({ item }: { item: Gadget }) => (
+    <TouchableOpacity 
+      style={[styles.popularCard, { 
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        shadowColor: colors.shadow,
+      }]}
+      onPress={() => handleProductPress(item)}
+    >
+      <Image source={getGadgetImage(item)} style={styles.popularImage} />
+      <Text style={[styles.popularTitle, { color: colors.text }]} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <View style={styles.popularStats}>
+        <Text style={[styles.popularRentals, { color: colors.primary }]}>
+          📈 {item.times_rented || 0} rentals
+        </Text>
+      </View>
+      <Text style={[styles.popularPrice, { color: colors.primary }]}>
+        ₱{item.daily_rate}/hour
+      </Text>
     </TouchableOpacity>
   );
 
@@ -413,20 +516,61 @@ export default function Homepage() {
           {/* Greeting Section */}
           <View style={styles.greetingSection}>
             <Text style={[styles.greeting, { color: colors.text }]}>
-              Hey {currentUser.fullName || currentUser.email}, {greeting}
+              Hey {currentUser.fullName || currentUser.email?.split('@')[0]}, {greeting}
             </Text>
           </View>
 
           {/* Search Bar */}
           <SearchBar onSearchPress={handleSearchPress} />
 
+          {/* ============ POPULAR ITEMS (Based on ACTUAL RENTALS) - Normal Days ============ */}
+          {popularGadgets.length > 0 && !isExamWeek && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  🔥 Most Popular
+                </Text>
+                <Text style={[styles.seeAllText, { color: colors.primary }]}>
+                  Based on {gadgets.reduce((sum, g) => sum + (g.times_rented || 0), 0)} total rentals
+                </Text>
+              </View>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={popularGadgets}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderPopularItem}
+                contentContainerStyle={styles.mlListContainer}
+              />
+            </View>
+          )}
+
+          {/* ============ AI PICKS (ML Predictions) - ONLY During Exam Week ============ */}
+          {!loadingML && mlRecommendations.length > 0 && isExamWeek && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  🤖 AI Picks for {examWeekName || 'Exam Week'}
+                </Text>
+                <Text style={[styles.seeAllText, { color: colors.primary }]}>
+                  Powered by Machine Learning
+                </Text>
+              </View>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={mlRecommendations}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={renderMLRecommendation}
+                contentContainerStyle={styles.mlListContainer}
+              />
+            </View>
+          )}
+
           {/* Categories Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>All Categories</Text>
-              <TouchableOpacity>
-                <Text style={[styles.seeAllText, { color: colors.primary }]}>See All &gt;</Text>
-              </TouchableOpacity>
             </View>
             <View style={styles.categoriesContainer}>
               {categories.map((category) => (
@@ -440,10 +584,10 @@ export default function Homepage() {
                   onPress={() => handleCategoryPress(category)}
                 >
                   <View style={[styles.categoryIcon, { backgroundColor: colors.categoryIcon }]}>
-                    <Ionicons name={category.icon as any} size={28} color={colors.primary} />
+                    <Ionicons name={getCategoryIcon(category.name)} size={28} color={colors.primary} />
                   </View>
                   <Text style={[styles.categoryName, { color: colors.text }]}>{category.name}</Text>
-                  <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>{category.count}</Text>
+                  <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>{getCategoryCount(category.name)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -453,17 +597,28 @@ export default function Homepage() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>All Available Items</Text>
-              <Text style={[styles.itemsCount, { color: colors.textSecondary }]}>{allProducts.length} items</Text>
+              <Text style={[styles.itemsCount, { color: colors.textSecondary }]}>{gadgets.length} items</Text>
             </View>
             
-            <FlatList
-              data={allProducts}
-              renderItem={renderProductItem}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.productsGrid}
-            />
+            {loadingGadgets ? (
+              <View style={styles.loadingGadgetsContainer}>
+                <Text style={{ color: colors.textSecondary }}>Loading gadgets...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={gadgets}
+                renderItem={renderProductItem}
+                keyExtractor={(item) => item.id.toString()}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.productsGrid}
+                ListEmptyComponent={
+                  <View style={styles.emptyContainer}>
+                    <Text style={{ color: colors.textSecondary }}>No gadgets available at the moment</Text>
+                  </View>
+                }
+              />
+            )}
           </View>
 
           {/* Add proper bottom padding to account for tab bar */}
@@ -493,7 +648,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Modal Overlay Styles
+  loadingGadgetsContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
   modalContainer: {
     flex: 1,
     flexDirection: 'row',
@@ -511,7 +673,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     marginLeft: width * 0.85,
   },
-  // Header with Logo and Notification
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -549,7 +710,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: 'bold',
   },
-  // Greeting Section
   greetingSection: {
     paddingHorizontal: 20,
     paddingBottom: 16,
@@ -558,7 +718,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
-  // Sections
   section: {
     paddingHorizontal: 20,
     marginTop: 24,
@@ -616,7 +775,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  // Products Grid
   productsGrid: {
     paddingBottom: 8,
   },
@@ -634,6 +792,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     backgroundColor: '#f5f5f5',
+    resizeMode: 'cover',
   },
   productInfo: {
     padding: 16,
@@ -687,4 +846,83 @@ const styles = StyleSheet.create({
   bottomSpace: {
     height: 100,
   },
+  mlListContainer: {
+    paddingRight: 20,
+  },
+  mlCard: {
+    width: 140,
+    padding: 12,
+    borderRadius: 12,
+    marginRight: 12,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  mlCardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  mlCardProbability: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  highDemandBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  highDemandText: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  mlCardHint: {
+    fontSize: 10,
+  },
+  // Popular card styles for normal days
+  popularCard: {
+    width: 140,
+    padding: 12,
+    borderRadius: 12,
+    marginRight: 12,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    alignItems: 'center',
+  },
+  popularImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginBottom: 8,
+    resizeMode: 'cover',
+  },
+  popularTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  popularStats: {
+    marginBottom: 4,
+  },
+  popularRentals: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  popularPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 });
+
+export default Homepage;

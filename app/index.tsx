@@ -2,20 +2,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-
-// Use the Centralized API client instead of inline
-import { apiClient } from '../api/client';
+import { apiClient } from './api/client';
+import { useTheme } from './contexts/ThemeContext';
 
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
@@ -47,18 +45,9 @@ export default function LoginScreen() {
     try {
       const currentUser = await AsyncStorage.getItem('currentUser');
       const authToken = await AsyncStorage.getItem('authToken');
-      const isGuest = await AsyncStorage.getItem('isGuest');
       
-      // If logged in as regular user
       if (currentUser && authToken) {
         console.log('🔄 User already logged in, redirecting...');
-        setTimeout(() => {
-          router.replace('/(tabs)/explore');
-        }, 500);
-      }
-      // If guest mode
-      else if (isGuest === 'true') {
-        console.log('🔄 Guest mode active, redirecting...');
         setTimeout(() => {
           router.replace('/(tabs)/explore');
         }, 500);
@@ -69,7 +58,6 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    // Validate inputs
     if (!username.trim()) {
       Alert.alert('Error', 'Please enter your email or student ID');
       return;
@@ -85,17 +73,11 @@ export default function LoginScreen() {
     try {
       console.log('🎯 Login attempt for:', username);
       
-      // Call the centralized API client
       const response = await apiClient.login({ username, password });
       
-      // Remove guest mode if active
-      await AsyncStorage.removeItem('isGuest');
-      
-      // Save user session (apiClient.login already saves, but we save again for consistency)
       await AsyncStorage.setItem('currentUser', JSON.stringify(response.user));
       await AsyncStorage.setItem('authToken', response.token);
       
-      // Remember credentials if selected
       if (rememberMe) {
         await AsyncStorage.setItem('rememberedCredentials', JSON.stringify({
           username,
@@ -107,7 +89,8 @@ export default function LoginScreen() {
       console.log('✅ Login successful for:', response.user.fullName);
       console.log('✅ User status:', response.user.status);
       
-      // Navigate to home
+      // Register for push notifications after successful login (optional, can be added later)
+      
       router.replace('/(tabs)/explore');
       
     } catch (error: any) {
@@ -149,7 +132,7 @@ export default function LoginScreen() {
     );
   };
 
-  const handleGuestLogin = async () => {
+  const handleGuestLogin = () => {
     Alert.alert(
       'Continue as Guest',
       'You can browse products as a guest, but you\'ll need to create an account to rent items.',
@@ -157,10 +140,8 @@ export default function LoginScreen() {
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Continue as Guest', 
-          onPress: async () => {
-            // Clear any existing user session
-            await AsyncStorage.multiRemove(['currentUser', 'authToken', 'rememberedCredentials']);
-            await AsyncStorage.setItem('isGuest', 'true');
+          onPress: () => {
+            AsyncStorage.setItem('isGuest', 'true');
             router.replace('/(tabs)/explore');
           }
         }
@@ -174,10 +155,9 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      {/* Header Section */}
       <View style={[styles.header, { backgroundColor: colors.headerBackground }]}>
         <Image 
-          source={require('../../assets/images/Quickslot.png')} 
+          source={require('../assets/images/Quickslot.png')} 
           style={styles.logo} 
         />
         <Text style={styles.title}>QuickSlot</Text>
@@ -317,9 +297,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-  },
+  container: { flex: 1 },
   header: {
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -328,163 +306,38 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 8,
   },
-  logo: {
-    width: 150,
-    height: 70,
-    resizeMode: 'contain',
-    marginBottom: 15,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
-    marginTop: 4,
-    letterSpacing: 0.5,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
-  },
-  form: {
-    marginBottom: 30,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
-    fontSize: 16,
-  },
-  passwordContainer: {
-    position: 'relative',
-    marginBottom: 8,
-  },
-  passwordInput: {
-    paddingRight: 70,
-  },
-  showPasswordButton: {
-    position: 'absolute',
-    right: 12,
-    top: 14,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  showPasswordText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmark: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  rememberMeText: {
-    fontSize: 14,
-  },
-  forgotPasswordContainer: {
-    paddingVertical: 4,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  loginButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  loginButtonDisabled: {
-    opacity: 0.6,
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  signupContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  signupText: {
-    fontSize: 14,
-  },
-  signupLink: {
-    fontWeight: 'bold',
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-  },
-  guestButton: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  guestButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  logo: { width: 150, height: 70, resizeMode: 'contain', marginBottom: 15 },
+  title: { fontSize: 32, fontWeight: 'bold', color: '#fff', textAlign: 'center', letterSpacing: 0.5 },
+  subtitle: { fontSize: 14, color: 'rgba(255, 255, 255, 0.8)', textAlign: 'center', marginTop: 4, letterSpacing: 0.5 },
+  content: { flex: 1, paddingHorizontal: 24, paddingTop: 40, paddingBottom: 40 },
+  form: { marginBottom: 30 },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
+  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 16, fontSize: 16 },
+  passwordContainer: { position: 'relative', marginBottom: 8 },
+  passwordInput: { paddingRight: 70 },
+  showPasswordButton: { position: 'absolute', right: 12, top: 14, paddingHorizontal: 8, paddingVertical: 4 },
+  showPasswordText: { fontSize: 14, fontWeight: '600' },
+  optionsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  rememberMeContainer: { flexDirection: 'row', alignItems: 'center' },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, marginRight: 8, justifyContent: 'center', alignItems: 'center' },
+  checkmark: { color: '#fff', fontSize: 12, fontWeight: 'bold' },
+  rememberMeText: { fontSize: 14 },
+  forgotPasswordContainer: { paddingVertical: 4 },
+  forgotPasswordText: { fontSize: 14, fontWeight: '600' },
+  loginButton: { borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 24, shadowColor: '#007AFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  loginButtonDisabled: { opacity: 0.6 },
+  loginButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold', letterSpacing: 0.5 },
+  signupContainer: { alignItems: 'center', marginBottom: 24 },
+  signupText: { fontSize: 14 },
+  signupLink: { fontWeight: 'bold' },
+  divider: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { marginHorizontal: 16, fontSize: 14 },
+  guestButton: { borderWidth: 1, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+  guestButtonText: { fontSize: 14, fontWeight: '600' },
 });

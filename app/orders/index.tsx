@@ -16,13 +16,14 @@ import {
 import { apiClient } from '../api/client';
 import { useTheme } from '../contexts/ThemeContext';
 
+// Updated interface to match Django response
 interface OrderItem {
   id: string;
   name: string;
-  price: string;
-  image: any;
-  owner: string;
-  rentalDuration: string;
+  price?: string;
+  image?: any;
+  owner?: string;
+  rentalDuration?: string;
   quantity: number;
   totalPrice: number;
 }
@@ -47,7 +48,20 @@ export default function MyOrdersScreen() {
   const loadOrders = async () => {
     try {
       const response = await apiClient.getMyOrders();
-      setOrders(response.orders);
+      console.log('📦 Orders response:', response);
+      
+      // Ensure orders have proper structure
+      const formattedOrders = (response.orders || []).map((order: any) => ({
+        ...order,
+        totalAmount: parseFloat(order.totalAmount) || 0,
+        items: (order.items || []).map((item: any) => ({
+          ...item,
+          totalPrice: parseFloat(item.totalPrice) || 0,
+          quantity: item.quantity || 1,
+        })),
+      }));
+      
+      setOrders(formattedOrders);
     } catch (error: any) {
       console.error('Error loading orders:', error);
       Alert.alert('Error', 'Failed to load orders');
@@ -88,7 +102,19 @@ export default function MyOrdersScreen() {
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Pending';
+      case 'confirmed': return 'Confirmed';
+      case 'in_progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return status;
+    }
+  };
+
   const formatDate = (dateString: string) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -96,6 +122,26 @@ export default function MyOrdersScreen() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // Helper function to get image based on gadget name/category
+  const getItemImage = (itemName: string) => {
+    const name = itemName.toLowerCase();
+    if (name.includes('macbook') || name.includes('laptop')) {
+      return require('../../assets/images/laptop.png');
+    } else if (name.includes('ipad') || name.includes('tablet')) {
+      return require('../../assets/images/Ipad.png');
+    } else if (name.includes('camera')) {
+      return require('../../assets/images/Canon.png');
+    } else if (name.includes('iphone') || name.includes('phone')) {
+      return require('../../assets/images/Iphone.png');
+    } else if (name.includes('projector')) {
+      return require('../../assets/images/Stream.png');
+    } else if (name.includes('calculator')) {
+      return require('../../assets/images/Scical.png');
+    } else {
+      return require('../../assets/images/Quickslot.png');
+    }
   };
 
   const renderOrderItem = ({ item }: { item: Order }) => (
@@ -117,27 +163,29 @@ export default function MyOrdersScreen() {
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
           <Ionicons name={getStatusIcon(item.status) as any} size={14} color="#fff" />
-          <Text style={styles.statusText}>{item.status.replace('_', ' ')}</Text>
+          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
         </View>
       </View>
 
       <View style={styles.itemsContainer}>
         {item.items.map((orderItem, index) => (
           <View key={index} style={styles.itemRow}>
-            <Image source={orderItem.image} style={styles.itemImage} />
+            <Image source={getItemImage(orderItem.name)} style={styles.itemImage} />
             <View style={styles.itemDetails}>
               <Text style={[styles.itemName, { color: colors.text }]}>{orderItem.name}</Text>
               <Text style={[styles.itemInfo, { color: colors.textSecondary }]}>
-                {orderItem.quantity}x • {orderItem.rentalDuration} • {orderItem.owner}
+                {orderItem.quantity}x • {orderItem.rentalDuration || 'Hourly'} • {orderItem.owner || 'QuickSlot Partner'}
               </Text>
             </View>
-            <Text style={[styles.itemPrice, { color: colors.primary }]}>₱{orderItem.totalPrice.toFixed(2)}</Text>
+            <Text style={[styles.itemPrice, { color: colors.primary }]}>
+              ₱{orderItem.totalPrice.toFixed(2)}
+            </Text>
           </View>
         ))}
       </View>
 
       <View style={[styles.orderFooter, { borderTopColor: colors.border }]}>
-        <Text style={[styles.paymentMethod, { color: colors.textSecondary }]}>{item.paymentMethod}</Text>
+        <Text style={[styles.paymentMethod, { color: colors.textSecondary }]}>{item.paymentMethod || 'Cash'}</Text>
         <Text style={[styles.totalAmount, { color: colors.primary }]}>₱{item.totalAmount.toFixed(2)}</Text>
       </View>
     </TouchableOpacity>
@@ -206,7 +254,7 @@ export default function MyOrdersScreen() {
     </SafeAreaView>
   );
 }
-//styles
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
