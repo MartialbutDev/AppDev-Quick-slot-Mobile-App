@@ -124,3 +124,147 @@ The system consists of a **Django REST API backend**, a **FastAPI ML microservic
 ---
 
 ## System Architecture
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+
+
+### Data Flow
+
+1. **User** interacts with Mobile App or Web Admin
+2. **Requests** are sent to Django REST API (Port 8000)
+3. **ML predictions** are handled by FastAPI (Port 8001)
+4. **Data** is stored in SQLite/PostgreSQL database
+5. **Images** are served from Django media directory
+6. **Push notifications** are sent via Expo API
+
+---
+
+## Installation & Setup
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- Expo CLI
+- Git
+
+### 1. Clone Repositories
+
+```bash
+# Backend
+git clone https://github.com/MartialbutDev/AppDev-QUICKSLOT-BACKEND.git
+cd AppDev-QUICKSLOT-BACKEND
+
+# Web Admin
+git clone https://github.com/MartialbutDev/quickslot-ustp.git
+
+# Mobile App
+git clone https://github.com/MartialbutDev/AppDev-Quick-slot-Mobile-App.git
+
+2. Backend Setup (Django + FastAPI)
+
+cd QuickSlot-Backend
+
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Mac/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install ML dependencies
+pip install joblib pandas numpy scikit-learn pyotp
+
+# Run migrations
+python manage.py makemigrations api
+python manage.py migrate
+
+# Create superuser (admin)
+python manage.py createsuperuser
+
+# Start Django server (Terminal 1)
+python manage.py runserver 0.0.0.0:8000
+
+# Start FastAPI ML service (Terminal 2)
+cd analytics_microservice
+python main.py
+
+3. Web Admin Setup
+cd quickslot-ustp
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+
+4. Mobile App Setup
+cd Quick-slot
+
+# Install dependencies
+npm install
+
+# Install Expo CLI
+npm install -g expo-cli
+
+# Start Expo server
+npx expo start -c
+
+
+
+API Endpoints
+ML Prediction Endpoint
+
+Parameter	           Type	           Example	           Description
+gadget_category	       string	       Laptop	        Laptop, Calculator, Camera, Tablet, Projector
+user_role	           string	       Student	        Student, Faculty, Staff
+duration_days	       integer	         3	            Rental duration in days
+daily_rate	            float	        100              Price per day in PHP
+event_priority	        integer      	10            	7=Normal, 10=Exam Week
+
+
+Example Request:
+
+curl "http://localhost:8001/api/ml/exam-week-predict?gadget_category=Laptop&user_role=Student&duration_days=3&daily_rate=100&event_priority=10"
+
+
+Example Response:
+
+{
+  "gadget_category": "Laptop",
+  "user_role": "Student",
+  "duration_days": 3,
+  "daily_rate": 100,
+  "event_priority": 10,
+  "is_exam_week": true,
+  "exam_week_name": "Finals (2nd Sem)",
+  "exam_week_probability": 0.82,
+  "is_high_demand": true,
+  "recommendation": "🔥 High Demand - Recommended for Exam Week"
+}
+
+
+Team Members and Roles
+
+Member	                            Role
+Varren Meg M. Naive	        Project Lead / Backend Developer
+Rochill Libron	            Frontend Developer
+Ellyza Dilapos	            UI/UX Designer
+Christopher Vasquez	       Frontend Developer
+
+
+Known Limitations
+Limitation                 	Description	                      Future Improvement
+No HTTPS	      Currently using HTTP for development	     Deploy with SSL on Render
+SMS 2FA               Only email OTP implemented	        Integrate Twilio API
+Payment Gateway	      No real payment processing         	Integrate PayMongo or GCash API
+Image Storage      	  Local media files only	            Migrate to Cloudinary or AWS S3
+No Real-time Chat 	Messages are mock data	                Implement WebSocket chat
+Single Backend Instance	No horizontal scaling	            Add load balancer, multiple instances
+SQLite in Production	Not suitable for production         	Use PostgreSQL on Render
+No Rate Limiting	   Vulnerable to brute force	             Add Django Ratelimit
+Forgot Password     	Not implemented                      Add password reset via email
