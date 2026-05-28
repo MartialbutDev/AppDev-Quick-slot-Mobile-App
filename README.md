@@ -123,12 +123,19 @@ The system consists of a **Django REST API backend**, a **FastAPI ML microservic
 
 ---
 
-## System Architecture
-![alt text](image.png)
+## Layered Architecture
 
-![alt text](image-1.png)
+![Layered Architecture Diagram](assets/images/Layered%20Architecture%20Diagram.png)
 
+*Figure 1: Layered Architecture (N-Tier Architecture) of the QuickSlot System*
 
+---
+
+## Entity Relationship Diagram (ERD)
+
+![ERD Diagram](assets/images/ERD.png)
+
+*Figure 2: Entity Relationship Diagram of the QuickSlot Database*
 
 ### Data Flow
 
