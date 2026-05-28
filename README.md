@@ -7,6 +7,16 @@
 The system consists of a **Django REST API backend**, a **FastAPI ML microservice** for demand prediction, a **React-based Web Admin Dashboard**, and an **Expo React Native mobile app**.
 
 ---
+## Github repo
+## BACKEND 
+https://github.com/MartialbutDev/AppDev-QUICKSLOT-BACKEND
+
+## MOBILE
+
+https://github.com/MartialbutDev/AppDev-Quick-slot-Mobile-App
+
+## WEB
+https://github.com/MartialbutDev/quickslot-ustp
 
 ## Features
 
